@@ -11,7 +11,7 @@ namespace EmployeeAuthService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin")]  // Restrict these actions to users with the Admin role
+    //[Authorize(Roles = "Admin")]  // Restrict these actions to users with the Admin role
     public class AuthenticationController : ControllerBase
     {
         private readonly UserManager<IdentityUser> _userManager;
