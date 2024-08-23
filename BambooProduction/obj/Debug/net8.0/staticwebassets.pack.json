@@ -1,0 +1,41 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\emil_\\Desktop\\Bachelor\\BambooProduction\\BambooProduction\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\BambooProduction.bundle.scp.css",
+      "PackagePath": "staticwebassets\\BambooProduction.bundle.scp.css"
+    },
+    {
+      "Id": "C:\\Users\\emil_\\Desktop\\Bachelor\\BambooProduction\\BambooProduction\\wwwroot\\app.css",
+      "PackagePath": "staticwebassets\\app.css"
+    },
+    {
+      "Id": "C:\\Users\\emil_\\Desktop\\Bachelor\\BambooProduction\\BambooProduction\\wwwroot\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\emil_\\Desktop\\Bachelor\\BambooProduction\\BambooProduction\\wwwroot\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\emil_\\Desktop\\Bachelor\\BambooProduction\\BambooProduction\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.BambooProduction.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.BambooProduction.props",
+      "PackagePath": "build\\BambooProduction.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.BambooProduction.props",
+      "PackagePath": "buildMultiTargeting\\BambooProduction.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.BambooProduction.props",
+      "PackagePath": "buildTransitive\\BambooProduction.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

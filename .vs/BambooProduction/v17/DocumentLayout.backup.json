@@ -1,0 +1,75 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\emil_\\Desktop\\Bachelor\\BambooProduction\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{E23B96F8-CC8F-42AE-B465-7720E02952B9}|BambooProduction\\BambooProduction.csproj|c:\\users\\emil_\\desktop\\bachelor\\bambooproduction\\bambooproduction\\components\\layout\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E23B96F8-CC8F-42AE-B465-7720E02952B9}|BambooProduction\\BambooProduction.csproj|solutionrelative:bambooproduction\\components\\layout\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\emil_\\Desktop\\Bachelor\\BambooProduction\\BambooProduction\\Data\\Migrations\\20240823094015_bamboo init2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:BambooProduction\\Data\\Migrations\\20240823094015_bamboo init2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E23B96F8-CC8F-42AE-B465-7720E02952B9}|BambooProduction\\BambooProduction.csproj|c:\\users\\emil_\\desktop\\bachelor\\bambooproduction\\bambooproduction\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{E23B96F8-CC8F-42AE-B465-7720E02952B9}|BambooProduction\\BambooProduction.csproj|solutionrelative:bambooproduction\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:40:0:{e8034f19-ab72-4f06-83fd-f6832b41aa63}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "NavMenu.razor",
+              "DocumentMoniker": "C:\\Users\\emil_\\Desktop\\Bachelor\\BambooProduction\\BambooProduction\\Components\\Layout\\NavMenu.razor",
+              "RelativeDocumentMoniker": "BambooProduction\\Components\\Layout\\NavMenu.razor",
+              "ToolTip": "C:\\Users\\emil_\\Desktop\\Bachelor\\BambooProduction\\BambooProduction\\Components\\Layout\\NavMenu.razor",
+              "RelativeToolTip": "BambooProduction\\Components\\Layout\\NavMenu.razor",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAABYAAABsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2024-08-23T09:42:45.788Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "20240823094015_bamboo init2.cs",
+              "DocumentMoniker": "C:\\Users\\emil_\\Desktop\\Bachelor\\BambooProduction\\BambooProduction\\Data\\Migrations\\20240823094015_bamboo init2.cs",
+              "RelativeDocumentMoniker": "BambooProduction\\Data\\Migrations\\20240823094015_bamboo init2.cs",
+              "ToolTip": "C:\\Users\\emil_\\Desktop\\Bachelor\\BambooProduction\\BambooProduction\\Data\\Migrations\\20240823094015_bamboo init2.cs",
+              "RelativeToolTip": "BambooProduction\\Data\\Migrations\\20240823094015_bamboo init2.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-23T09:40:16.017Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\emil_\\Desktop\\Bachelor\\BambooProduction\\BambooProduction\\appsettings.json",
+              "RelativeDocumentMoniker": "BambooProduction\\appsettings.json",
+              "ToolTip": "C:\\Users\\emil_\\Desktop\\Bachelor\\BambooProduction\\BambooProduction\\appsettings.json",
+              "RelativeToolTip": "BambooProduction\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2024-08-23T09:39:03.367Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
