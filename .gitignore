@@ -98,8 +98,14 @@ yarn-error.log*
 
 # .NET Core tooling
 .vs/
-.vs/config/applicationHost.config
+.vs/config/
 .vs/slnx.sqlite
+.vs/**/FileContentIndex/
+.vs/**/v16/
+.vs/**/v17/
+.vs/**/*.db
+.vs/**/*.suo
+.vs/**/*.json
 
 # Local History for Rider
 .idea/
@@ -154,3 +160,11 @@ Migrations/
 *.cer
 *.crt
 *.der
+
+# Solution files
+*.sln
+
+# Razor components (only if auto-generated)
+*.g.cshtml
+*.g.razor
+
