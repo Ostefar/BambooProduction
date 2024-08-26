@@ -1,5 +1,7 @@
 ﻿@page "/employees"
-@attribute [StreamRendering]
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Roles = "Admin")]
 
 <h3>Employees</h3>
 
