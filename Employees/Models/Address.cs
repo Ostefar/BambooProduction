@@ -14,7 +14,7 @@ namespace Employees.Models
 
 
         [Required(ErrorMessage = "City field is required.")]
-        [StringLength(maximumLength: 35, MinimumLength = 2)]
+        [StringLength(maximumLength: 168, MinimumLength = 2)]
         public string City { get; set; }
 
         [Required(ErrorMessage = "Zip code field is required.")]
@@ -33,8 +33,6 @@ namespace Employees.Models
         [Required]
         [StringLength(256)]
         public string LastUpdatedBy { get; set; }
-
-        public ICollection<Employee> Employees { get; set; } = new List<Employee>();
 
         public Address()
         {

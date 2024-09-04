@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,16 +15,16 @@ namespace Employees.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public class EmployeeController : ControllerBase
     {
         private readonly EmployeeDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IConverter<Employee, EmployeeDto> taskConverter;
 
-        public EmployeeController(EmployeeDbContext context, UserManager<IdentityUser> userManager)
+        public EmployeeController(EmployeeDbContext context, IConverter<Employee, EmployeeDto> converter)
         {
             _context = context;
-            _userManager = userManager;
+            taskConverter = converter;
         }
 
         // GET: api/Employee
@@ -53,16 +54,15 @@ namespace Employees.Controllers
 
         // POST: api/Employee
         [HttpPost]
-        public async Task<ActionResult<Employee>> PostEmployee(Employee employee)
+        public async Task<ActionResult<Employee>> PostEmployee(EmployeeDto employee)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            // Get the current user's UserId
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
+            // Check the current user's UserId
+            if (employee.UserId == null)
             {
                 return Unauthorized();
             }
@@ -70,10 +70,11 @@ namespace Employees.Controllers
             employee.Id = Guid.NewGuid();
             employee.CreatedDate = DateTime.UtcNow;
             employee.LastUpdated = DateTime.UtcNow;
-            employee.UserId = userId; // Set the UserId
-            //employee.LastUpdatedBy
+            employee.AddressId = Guid.NewGuid();
+        
 
-            _context.Employees.Add(employee);
+            var convertedEmployee = taskConverter.Convert(employee);
+            _context.Employees.Add(convertedEmployee);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetEmployee), new { id = employee.Id }, employee);

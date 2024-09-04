@@ -4,10 +4,13 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using BambooProduction.Data
+@using System.Net.Http.Headers
+@using global::Shared
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
@@ -16,6 +19,9 @@
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject HttpClient HttpClient
+@inject IAuthenticationService AuthenticationService
+
 
 <PageTitle>Register</PageTitle>
 
@@ -29,27 +35,105 @@
             <h2>Create a new account.</h2>
             <hr />
             <ValidationSummary class="text-danger" role="alert" />
+
             <div class="form-floating mb-3">
                 <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
                 <label for="email">Email</label>
                 <ValidationMessage For="() => Input.Email" class="text-danger" />
             </div>
+
             <div class="form-floating mb-3">
                 <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
                 <label for="password">Password</label>
                 <ValidationMessage For="() => Input.Password" class="text-danger" />
             </div>
+
             <div class="form-floating mb-3">
                 <InputText type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
                 <label for="confirm-password">Confirm Password</label>
                 <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
             </div>
+
+            <div class="form-floating mb-3">
+                <InputSelect @bind-Value="Input.Role" class="form-control">
+                    <option value="1">Employee</option>
+                    <option value="2">Admin</option>
+                </InputSelect>
+                <label for="role">Role</label>
+                <ValidationMessage For="() => Input.Role" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.FirstName" class="form-control" placeholder="First Name" />
+                <label for="firstName">First Name</label>
+                <ValidationMessage For="() => Input.FirstName" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.LastName" class="form-control" placeholder="Last Name" />
+                <label for="lastName">Last Name</label>
+                <ValidationMessage For="() => Input.LastName" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Phone" class="form-control" placeholder="Phone" />
+                <label for="phone">Phone</label>
+                <ValidationMessage For="() => Input.Phone" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputSelect @bind-Value="Input.JobTitle" class="form-control">
+                    <option value="1">Job Title 1</option>
+                    <option value="2">Job Title 2</option>
+                    <option value="3">Job Title 3</option>
+                </InputSelect>
+                <label for="jobTitle">Job Title</label>
+                <ValidationMessage For="() => Input.JobTitle" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputDate @bind-Value="Input.BirthDate" class="form-control" placeholder="Birth Date" min="1900-01-01" max="2100-12-31" />
+                <label for="birthDate">Birth Date</label>
+                <ValidationMessage For="() => Input.BirthDate" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputDate @bind-Value="Input.HiringDate" class="form-control" placeholder="Hiring Date" min="1900-01-01" max="2100-12-31" />
+                <label for="hiringDate">Hiring Date</label>
+                <ValidationMessage For="() => Input.HiringDate" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.AddressLine" class="form-control" placeholder="Address Line" />
+                <label for="addressLine">Address Line</label>
+                <ValidationMessage For="() => Input.AddressLine" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.City" class="form-control" placeholder="City" />
+                <label for="city">City</label>
+                <ValidationMessage For="() => Input.City" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.ZipCode" class="form-control" placeholder="Zip Code" />
+                <label for="zipCode">Zip Code</label>
+                <ValidationMessage For="() => Input.ZipCode" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Country" class="form-control" placeholder="Country" />
+                <label for="country">Country</label>
+                <ValidationMessage For="() => Input.Country" class="text-danger" />
+            </div>
+
             <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
         </EditForm>
     </div>
 </div>
 
 @code {
+    private HttpClient httpClient;
     private IEnumerable<IdentityError>? identityErrors;
 
     [SupplyParameterFromForm]
@@ -77,7 +161,61 @@
 
         Logger.LogInformation("User created a new account with password.");
 
+        // Assign role to the user
+        if (Input.Role == 1)
+        {
+            await UserManager.AddToRoleAsync(user, "Employee");
+        }
+        else if(Input.Role == 2)
+        {
+            await UserManager.AddToRoleAsync(user, "Admin");
+        }
+
         var userId = await UserManager.GetUserIdAsync(user);
+
+        // Create Employee using the Employee API   
+        var employee = new EmployeeDto
+            {
+                FirstName = Input.FirstName,
+                LastName = Input.LastName,
+                Phone = Input.Phone,
+                Email = Input.Email,
+                JobTitle = Input.JobTitle,
+                BirthDate = Input.BirthDate,
+                HiringDate = Input.HiringDate,
+                UserId = userId,
+                CreatedDate = DateTime.Now,
+                LastUpdated = DateTime.Now,
+                LastUpdatedBy = Input.FirstName + Input.LastName,
+                Address = new AddressDto
+                {
+                    AddressLine = Input.AddressLine,
+                    City = Input.City,
+                    ZipCode = Input.ZipCode,
+                    Country = Input.Country,
+                    LastUpdated = DateTime.Now,
+                    LastUpdatedBy = Input.FirstName + Input.LastName,
+                }
+            };
+
+        var response = await HttpClient.PostAsJsonAsync("Employee", employee);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            // Delete the user if the employee creation fails
+            Logger.LogInformation("Employee creation failed, deleting user account.");
+
+            var deleteResult = await UserManager.DeleteAsync(user);
+            if (!deleteResult.Succeeded)
+            {
+                identityErrors = deleteResult.Errors;
+                return;
+            }
+
+            identityErrors = new[] { new IdentityError { Description = "Failed to create employee, user account has been deleted." } };
+            return;
+        }
+
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
         var callbackUrl = NavigationManager.GetUriWithQueryParameters(
@@ -96,6 +234,7 @@
         await SignInManager.SignInAsync(user, isPersistent: false);
         RedirectManager.RedirectTo(ReturnUrl);
     }
+
 
     private ApplicationUser CreateUser()
     {
@@ -121,6 +260,7 @@
 
     private sealed class InputModel
     {
+        // Identity-related fields
         [Required]
         [EmailAddress]
         [Display(Name = "Email")]
@@ -136,5 +276,51 @@
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; } = "";
+
+        // Employee-related fields
+        [Required]
+        [StringLength(50, ErrorMessage = "First name must be between 2 and 50 characters.", MinimumLength = 2)]
+        public string FirstName { get; set; } = "";
+
+        [Required]
+        [StringLength(45, ErrorMessage = "Last name must be between 2 and 45 characters.", MinimumLength = 2)]
+        public string LastName { get; set; } = "";
+
+        [Required]
+        [StringLength(8, ErrorMessage = "Phone number must be 8 digits")]
+        public string Phone { get; set; } = "";
+
+        [Required]
+        [Range(1, 3)]
+        public int JobTitle { get; set; }
+
+        [Required]
+        [Range(1, 2)]
+        public int Role { get; set; }
+
+        [Required]
+        [DataType(DataType.Date)]
+        public DateTime BirthDate { get; set; } = DateTime.Today;
+
+        [Required]
+        [DataType(DataType.Date)]
+        public DateTime HiringDate { get; set; } = DateTime.Today;
+
+        // Address-related fields
+        [Required]
+        [StringLength(100, ErrorMessage = "Address must be between 2 and 100 characters", MinimumLength = 2)]
+        public string AddressLine { get; set; } = "";
+
+        [Required]
+        [StringLength(168, ErrorMessage = "City must be between 2 and 168 characters",  MinimumLength = 2)]
+        public string City { get; set; } = "";
+
+        [Required]
+        [StringLength(4, ErrorMessage = "Zipcode must be between 4 digits", MinimumLength = 4)]
+        public string ZipCode { get; set; } = "";
+
+        [Required]
+        [StringLength(56, ErrorMessage = "Country must be between 2 and 56 characters", MinimumLength = 2)]
+        public string Country { get; set; } = "";
     }
 }
