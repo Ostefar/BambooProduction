@@ -4,6 +4,7 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
+@using BambooProduction.Service
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
@@ -21,6 +22,7 @@
 @inject IdentityRedirectManager RedirectManager
 @inject HttpClient HttpClient
 @inject IAuthenticationService AuthenticationService
+@inject AuthService AuthService
 
 
 <PageTitle>Register</PageTitle>
@@ -133,7 +135,6 @@
 </div>
 
 @code {
-    private HttpClient httpClient;
     private IEnumerable<IdentityError>? identityErrors;
 
     [SupplyParameterFromForm]
@@ -146,93 +147,95 @@
 
     public async Task RegisterUser(EditContext editContext)
     {
-        var user = CreateUser();
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
 
-        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-        var emailStore = GetEmailStore();
-        await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-        var result = await UserManager.CreateAsync(user, Input.Password);
+            var user = CreateUser();
+            await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+            var emailStore = GetEmailStore();
+            await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+            var result = await UserManager.CreateAsync(user, Input.Password);
 
-        if (!result.Succeeded)
-        {
-            identityErrors = result.Errors;
-            return;
-        }
-
-        Logger.LogInformation("User created a new account with password.");
-
-        // Assign role to the user
-        if (Input.Role == 1)
-        {
-            await UserManager.AddToRoleAsync(user, "Employee");
-        }
-        else if(Input.Role == 2)
-        {
-            await UserManager.AddToRoleAsync(user, "Admin");
-        }
-
-        var userId = await UserManager.GetUserIdAsync(user);
-
-        // Create Employee using the Employee API   
-        var employee = new EmployeeDto
+            if (!result.Succeeded)
             {
-                FirstName = Input.FirstName,
-                LastName = Input.LastName,
-                Phone = Input.Phone,
-                Email = Input.Email,
-                JobTitle = Input.JobTitle,
-                BirthDate = Input.BirthDate,
-                HiringDate = Input.HiringDate,
-                UserId = userId,
-                CreatedDate = DateTime.Now,
-                LastUpdated = DateTime.Now,
-                LastUpdatedBy = Input.FirstName + Input.LastName,
-                Address = new AddressDto
-                {
-                    AddressLine = Input.AddressLine,
-                    City = Input.City,
-                    ZipCode = Input.ZipCode,
-                    Country = Input.Country,
-                    LastUpdated = DateTime.Now,
-                    LastUpdatedBy = Input.FirstName + Input.LastName,
-                }
-            };
-
-        var response = await HttpClient.PostAsJsonAsync("Employee", employee);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            // Delete the user if the employee creation fails
-            Logger.LogInformation("Employee creation failed, deleting user account.");
-
-            var deleteResult = await UserManager.DeleteAsync(user);
-            if (!deleteResult.Succeeded)
-            {
-                identityErrors = deleteResult.Errors;
+                identityErrors = result.Errors;
                 return;
             }
 
-            identityErrors = new[] { new IdentityError { Description = "Failed to create employee, user account has been deleted." } };
-            return;
-        }
+            Logger.LogInformation("User created a new account with password.");
 
-        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
-            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
-            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
+            // Assign role to the user
+            if (Input.Role == 1)
+            {
+                await UserManager.AddToRoleAsync(user, "Employee");
+            }
+            else if (Input.Role == 2)
+            {
+                await UserManager.AddToRoleAsync(user, "Admin");
+            }
 
-        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+            var userId = await UserManager.GetUserIdAsync(user);
 
-        if (UserManager.Options.SignIn.RequireConfirmedAccount)
-        {
-            RedirectManager.RedirectTo(
-                "Account/RegisterConfirmation",
-                new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
-        }
+            // Create Employee using the Employee API   
+            var employee = new EmployeeDto
+                {
+                    FirstName = Input.FirstName,
+                    LastName = Input.LastName,
+                    Phone = Input.Phone,
+                    Email = Input.Email,
+                    JobTitle = Input.JobTitle,
+                    BirthDate = Input.BirthDate,
+                    HiringDate = Input.HiringDate,
+                    UserId = userId,
+                    LoggedInUserRole = loggedInUserRole, 
+                    CreatedDate = DateTime.Now,
+                    LastUpdated = DateTime.Now,
+                    LastUpdatedBy = Input.FirstName + " " + Input.LastName,
+                    Address = new AddressDto
+                    {
+                        AddressLine = Input.AddressLine,
+                        City = Input.City,
+                        ZipCode = Input.ZipCode,
+                        Country = Input.Country,
+                        LastUpdated = DateTime.Now,
+                    LastUpdatedBy = Input.FirstName + " " + Input.LastName,
+                    }
+                };
 
-        await SignInManager.SignInAsync(user, isPersistent: false);
-        RedirectManager.RedirectTo(ReturnUrl);
+            var response = await HttpClient.PostAsJsonAsync("Employee", employee);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                // Delete the user if the employee creation fails
+                Logger.LogInformation("Employee creation failed, deleting user account.");
+
+                var deleteResult = await UserManager.DeleteAsync(user);
+                if (!deleteResult.Succeeded)
+                {
+                    identityErrors = deleteResult.Errors;
+                    return;
+                }
+
+                identityErrors = new[] { new IdentityError { Description = "Failed to create employee, user account has been deleted." } };
+                return;
+            }
+
+            var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+                NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+                new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
+
+            await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+
+            if (UserManager.Options.SignIn.RequireConfirmedAccount)
+            {
+                RedirectManager.RedirectTo(
+                    "Account/RegisterConfirmation",
+                    new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
+            }
+
+            await SignInManager.SignInAsync(user, isPersistent: false);
+            RedirectManager.RedirectTo(ReturnUrl);
     }
 
 

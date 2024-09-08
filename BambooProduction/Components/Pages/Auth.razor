@@ -9,10 +9,17 @@
 <h1>You are authenticated</h1>
 
 <AuthorizeView>
-    Hello @context.User.Identity?.Name!
+    You are logged in with this account
+    <br />
+    @context.User.Identity?.Name!
 </AuthorizeView>
 
 <AuthorizeView Roles="Admin">
     <br />
-    Your account has the admin access
+    which has the admin access
+</AuthorizeView>
+
+<AuthorizeView Roles="Employee">
+    <br />
+    which has the employee access
 </AuthorizeView>

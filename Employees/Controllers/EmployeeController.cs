@@ -29,60 +29,172 @@ namespace Employees.Controllers
 
         // GET: api/Employee
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Employee>>> GetEmployees()
+        public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetEmployees(String loggedInUserRole)
         {
-            return await _context.Employees
-                .Include(e => e.Address)
+            List<EmployeeDto> employees;
+
+            if (loggedInUserRole == "Admin")
+            {
+                employees = await _context.Employees
+                .Select(e => new EmployeeDto
+                {
+                    FirstName = e.FirstName,
+                    LastName = e.LastName,
+                    Phone = e.Phone,
+                    Email = e.Email,
+                    JobTitle = e.JobTitle,
+                    BirthDate = e.BirthDate,
+                    HiringDate = e.HiringDate,
+                    CreatedDate = e.CreatedDate,
+                    LastUpdated = e.LastUpdated,
+                    LastUpdatedBy = e.LastUpdatedBy,
+                    Address = new AddressDto
+                    {
+                        AddressLine = e.Address.AddressLine,
+                        City = e.Address.City,
+                        ZipCode = e.Address.ZipCode,
+                        Country = e.Address.Country,
+                        CreatedDate = e.CreatedDate,
+                        LastUpdated = e.LastUpdated,
+                        LastUpdatedBy = e.LastUpdatedBy,
+                    }
+                })
                 .ToListAsync();
+            }
+            else
+            {
+                employees = await _context.Employees
+                .Select(e => new EmployeeDto
+                {
+                    FirstName = e.FirstName,
+                    LastName = e.LastName,
+                    Phone = e.Phone,
+                    Email = e.Email,
+                    LastUpdated = e.LastUpdated,
+                    LastUpdatedBy = e.LastUpdatedBy,
+                    Address = new AddressDto
+                    {
+                        City = e.Address.City,
+                        Country = e.Address.Country,
+                        LastUpdated = e.LastUpdated,
+                        LastUpdatedBy = e.LastUpdatedBy,
+                    }
+                })
+                .ToListAsync();
+            }
+
+            return Ok(employees);
         }
+
 
         // GET: api/Employee/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Employee>> GetEmployee(Guid id)
+        public async Task<ActionResult<EmployeeDto>> GetEmployee(Guid id, String loggedInUserRole)
         {
-            var employee = await _context.Employees
-                .Include(e => e.Address)
-                .FirstOrDefaultAsync(e => e.Id == id);
+            var employee = new EmployeeDto();
+
+            if (loggedInUserRole == "Admin")
+            {
+                employee = await _context.Employees
+                .Where(e => e.Id == id)
+                .Select(e => new EmployeeDto
+                {
+                    FirstName = e.FirstName,
+                    LastName = e.LastName,
+                    Phone = e.Phone,
+                    Email = e.Email,
+                    JobTitle = e.JobTitle,
+                    BirthDate = e.BirthDate,
+                    HiringDate = e.HiringDate,
+                    CreatedDate = e.CreatedDate,
+                    LastUpdated = e.LastUpdated,
+                    LastUpdatedBy = e.LastUpdatedBy,
+                    Address = new AddressDto
+                    {
+                        AddressLine = e.Address.AddressLine,
+                        City = e.Address.City,
+                        ZipCode = e.Address.ZipCode,
+                        Country = e.Address.Country,
+                        CreatedDate = e.CreatedDate,
+                        LastUpdated = e.LastUpdated,
+                        LastUpdatedBy = e.LastUpdatedBy,
+                    }
+                })
+                .FirstOrDefaultAsync();
+            }
+            else
+            {
+                employee = await _context.Employees
+                .Where(e => e.Id == id)
+                .Select(e => new EmployeeDto
+                {
+                    FirstName = e.FirstName,
+                    LastName = e.LastName,
+                    Phone = e.Phone,
+                    Email = e.Email,
+                    LastUpdated = e.LastUpdated,
+                    LastUpdatedBy = e.LastUpdatedBy,
+                    Address = new AddressDto
+                    {
+                        City = e.Address.City,
+                        Country = e.Address.Country,
+                        LastUpdated = e.LastUpdated,
+                        LastUpdatedBy = e.LastUpdatedBy,
+                    }
+                })
+                .FirstOrDefaultAsync();
+            }
 
             if (employee == null)
             {
                 return NotFound();
             }
 
-            return employee;
+            return Ok(employee);
         }
 
         // POST: api/Employee
         [HttpPost]
         public async Task<ActionResult<Employee>> PostEmployee(EmployeeDto employee)
         {
-            if (!ModelState.IsValid)
+            if (employee.LoggedInUserRole == "Admin")
             {
-                return BadRequest(ModelState);
-            }
+                // er der nogle fields der skal krypteres?
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
-            // Check the current user's UserId
-            if (employee.UserId == null)
+                // Check the current user's UserId
+                if (employee.UserId == null)
+                {
+                    return Unauthorized();
+                }
+
+                // Set fields
+                employee.Id = Guid.NewGuid();
+                employee.CreatedDate = DateTime.UtcNow;
+                employee.LastUpdated = DateTime.UtcNow;
+                employee.AddressId = Guid.NewGuid();
+
+                // Convert dto to model
+                var convertedEmployee = taskConverter.Convert(employee);
+
+                _context.Employees.Add(convertedEmployee);
+                await _context.SaveChangesAsync();
+
+                return Ok(employee);
+            }
+            else 
             {
-                return Unauthorized();
+                return Unauthorized(employee.FirstName + " " + employee.LastName);
             }
-
-            employee.Id = Guid.NewGuid();
-            employee.CreatedDate = DateTime.UtcNow;
-            employee.LastUpdated = DateTime.UtcNow;
-            employee.AddressId = Guid.NewGuid();
-        
-
-            var convertedEmployee = taskConverter.Convert(employee);
-            _context.Employees.Add(convertedEmployee);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetEmployee), new { id = employee.Id }, employee);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> PutEmployee(Guid id, Employee employee)
         {
+            // ikke redigeret endnu
             if (id != employee.Id)
             {
                 return BadRequest();
@@ -109,6 +221,7 @@ namespace Employees.Controllers
                 return Unauthorized();
             }
 
+            // ændrer til kun at opdatere ønskede fields
             // Update employee details
             existingEmployee.FirstName = employee.FirstName;
             existingEmployee.LastName = employee.LastName;
@@ -118,7 +231,7 @@ namespace Employees.Controllers
             existingEmployee.BirthDate = employee.BirthDate;
             existingEmployee.HiringDate = employee.HiringDate;
             existingEmployee.LastUpdated = DateTime.UtcNow;
-            existingEmployee.LastUpdatedBy = userId; 
+            existingEmployee.LastUpdatedBy = employee.FirstName + " " + employee.LastName; 
 
             // Update address details
             existingEmployee.Address.AddressLine = employee.Address.AddressLine;
@@ -126,7 +239,7 @@ namespace Employees.Controllers
             existingEmployee.Address.ZipCode = employee.Address.ZipCode;
             existingEmployee.Address.Country = employee.Address.Country;
             existingEmployee.Address.LastUpdated = DateTime.UtcNow;
-            existingEmployee.Address.LastUpdatedBy = userId;
+            existingEmployee.Address.LastUpdatedBy = employee.FirstName + " " + employee.LastName;
 
             try
             {
@@ -149,21 +262,29 @@ namespace Employees.Controllers
 
         // DELETE: api/Employee/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteEmployee(Guid id)
+        public async Task<IActionResult> DeleteEmployee(Guid id, String loggedInUserRole)
         {
-            var employee = await _context.Employees
-                .Include(e => e.Address)
-                .FirstOrDefaultAsync(e => e.Id == id);
-
-            if (employee == null)
+            if (loggedInUserRole == "Admin")
             {
-                return NotFound();
+                // ændrer til også at slette den associaserede bruger (skal ske fra frontenden - se deletePersonalData - før deleteEmployee bliver kaldt
+                var employee = await _context.Employees
+                    .Include(e => e.Address)
+                    .FirstOrDefaultAsync(e => e.Id == id);
+
+                if (employee == null)
+                {
+                    return NotFound("User does not exist");
+                }
+
+                _context.Employees.Remove(employee);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
-
-            _context.Employees.Remove(employee);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            else 
+            {
+                return Unauthorized("You are not allowed to do this");
+            }
         }
 
         private bool EmployeeExists(Guid id)

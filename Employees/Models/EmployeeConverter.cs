@@ -5,7 +5,6 @@ namespace Employees.Models
     public class EmployeeConverter : IConverter<Employee, EmployeeDto>
     {
         // Converts EmployeeDto to Employee model
-        // Converts EmployeeDto to Employee model
         public Employee Convert(EmployeeDto dto)
         {
             return new Employee
