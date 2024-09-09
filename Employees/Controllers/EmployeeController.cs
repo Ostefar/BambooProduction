@@ -29,7 +29,7 @@ namespace Employees.Controllers
 
         // GET: api/Employee
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetEmployees(String loggedInUserRole)
+        public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetEmployees([FromQuery] String loggedInUserRole)
         {
             List<EmployeeDto> employees;
 
@@ -38,6 +38,7 @@ namespace Employees.Controllers
                 employees = await _context.Employees
                 .Select(e => new EmployeeDto
                 {
+                    Id = e.Id,
                     FirstName = e.FirstName,
                     LastName = e.LastName,
                     Phone = e.Phone,
@@ -89,7 +90,7 @@ namespace Employees.Controllers
 
         // GET: api/Employee/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<EmployeeDto>> GetEmployee(Guid id, String loggedInUserRole)
+        public async Task<ActionResult<EmployeeDto>> GetEmployee(Guid id, [FromQuery] String loggedInUserRole)
         {
             var employee = new EmployeeDto();
 
@@ -124,25 +125,7 @@ namespace Employees.Controllers
             }
             else
             {
-                employee = await _context.Employees
-                .Where(e => e.Id == id)
-                .Select(e => new EmployeeDto
-                {
-                    FirstName = e.FirstName,
-                    LastName = e.LastName,
-                    Phone = e.Phone,
-                    Email = e.Email,
-                    LastUpdated = e.LastUpdated,
-                    LastUpdatedBy = e.LastUpdatedBy,
-                    Address = new AddressDto
-                    {
-                        City = e.Address.City,
-                        Country = e.Address.Country,
-                        LastUpdated = e.LastUpdated,
-                        LastUpdatedBy = e.LastUpdatedBy,
-                    }
-                })
-                .FirstOrDefaultAsync();
+                Unauthorized("You are not allowed to do this");
             }
 
             if (employee == null)

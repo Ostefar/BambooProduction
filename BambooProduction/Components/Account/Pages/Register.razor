@@ -189,7 +189,7 @@
                     LoggedInUserRole = loggedInUserRole, 
                     CreatedDate = DateTime.Now,
                     LastUpdated = DateTime.Now,
-                    LastUpdatedBy = Input.FirstName + " " + Input.LastName,
+                    LastUpdatedBy = user.Email,
                     Address = new AddressDto
                     {
                         AddressLine = Input.AddressLine,
@@ -197,7 +197,7 @@
                         ZipCode = Input.ZipCode,
                         Country = Input.Country,
                         LastUpdated = DateTime.Now,
-                    LastUpdatedBy = Input.FirstName + " " + Input.LastName,
+                    LastUpdatedBy = user.Email,
                     }
                 };
 

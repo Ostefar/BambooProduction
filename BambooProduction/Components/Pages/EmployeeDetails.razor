@@ -1,0 +1,182 @@
+﻿@page "/Employee-details/{employeeId:guid}"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+@using BambooProduction.Service
+@using Microsoft.AspNetCore.Authorization
+@using Shared
+@using System.ComponentModel.DataAnnotations
+
+@attribute [Authorize(Roles = "Admin")]
+
+<h3>Employee details</h3>
+
+<br />
+
+@if (employee != null)
+{
+    
+    <EditForm Model="employee" OnValidSubmit="UpdateEmployee">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="employee.FirstName" class="form-control" placeholder="First Name" />
+                    <label for="firstName">First Name</label>
+                    <ValidationMessage For="() => employee.FirstName" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="employee.LastName" class="form-control" placeholder="Last Name" />
+                    <label for="lastName">Last Name</label>
+                    <ValidationMessage For="() => employee.LastName" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="employee.Phone" class="form-control" placeholder="Phone" />
+                    <label for="phone">Phone</label>
+                    <ValidationMessage For="() => employee.Phone" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="employee.Email" class="form-control" placeholder="Email" />
+                    <label for="email">Email</label>
+                    <ValidationMessage For="() => employee.Email" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputSelect @bind-Value="employee.JobTitle" class="form-control" placeholder="Job Title">
+                        <option value="1">CEO</option>
+                        <option value="2">Sales</option>
+                        <option value="3">Production</option>
+                    </InputSelect>
+                    <label for="jobTitle">Job Title</label>
+                    <ValidationMessage For="() => employee.JobTitle" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputDate @bind-Value="employee.BirthDate" class="form-control" placeholder="Birth Date" min="1900-01-01" max="2100-12-31" />
+                    <label for="birthDate">Birth Date</label>
+                    <ValidationMessage For="() => employee.BirthDate" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputDate @bind-Value="employee.HiringDate" class="form-control" placeholder="Hiring Date" min="1900-01-01" max="2100-12-31" />
+                    <label for="hiringDate">Hiring Date</label>
+                    <ValidationMessage For="() => employee.HiringDate" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="employee.Address.AddressLine" class="form-control" placeholder="Address Line" />
+                    <label for="addressLine">Address Line</label>
+                    <ValidationMessage For="() => employee.Address.AddressLine" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="employee.Address.City" class="form-control" placeholder="City" />
+                    <label for="city">City</label>
+                    <ValidationMessage For="() => employee.Address.City" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="employee.Address.ZipCode" class="form-control" placeholder="Zip Code" />
+                    <label for="zipCode">Zip Code</label>
+                    <ValidationMessage For="() => employee.Address.ZipCode" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="employee.Address.Country" class="form-control" placeholder="Country" />
+                    <label for="country">Country</label>
+                    <ValidationMessage For="() => employee.Address.Country" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputDate @bind-Value="employee.CreatedDate" class="form-control" placeholder="Created Date" min="1900-01-01" max="2100-12-31" disabled/>
+                    <label for="createdDate">Created Date</label>
+                    <ValidationMessage For="() => employee.CreatedDate" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputDate @bind-Value="employee.LastUpdated" class="form-control" placeholder="Last Updated" min="1900-01-01" max="2100-12-31" disabled />
+                    <label for="lastUpdated">Last Updated</label>
+                    <ValidationMessage For="() => employee.LastUpdated" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="employee.LastUpdatedBy" class="form-control" placeholder="Last Updated By"  disabled />
+                    <label for="lastUpdatedBy">Last Updated By</label>
+                    <ValidationMessage For="() => employee.LastUpdatedBy" class="text-danger" />
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="w-100 btn btn-lg btn-primary">Update</button>
+        <br>
+        <button type="button" class="w-100 btn btn-lg btn-danger" @onclick="DeleteEmployee">Delete</button>
+    </EditForm>
+
+}
+else
+{
+    <p>Loading...</p>
+}
+
+@code {
+    [Parameter] public Guid employeeId { get; set; }
+    private EmployeeDto employee;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployeeDetails();
+    }
+
+    private async Task LoadEmployeeDetails()
+    {
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
+        {
+            var requestUrl = $"Employee/{employeeId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            employee = await Http.GetFromJsonAsync<EmployeeDto>(requestUrl);
+        }
+    }
+
+    private async Task UpdateEmployee()
+    {
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+        if (loggedInUserRole == "Admin")
+        {
+            var requestUrl = $"Employee/{employeeId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            var response = await Http.PutAsJsonAsync(requestUrl, employee);
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/employees");
+            }
+            else
+            {
+                // Handle error
+            }
+        }
+    }
+
+    private async Task DeleteEmployee()
+    {
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+        if (loggedInUserRole == "Admin")
+        {
+            var requestUrl = $"Employee/{employeeId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            var response = await Http.DeleteAsync(requestUrl);
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/employees");
+            }
+            else
+            {
+                // Handle error
+            }
+        }
+    }
+}
