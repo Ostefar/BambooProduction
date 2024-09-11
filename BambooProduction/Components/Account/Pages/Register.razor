@@ -20,7 +20,7 @@
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
-@inject HttpClient HttpClient
+@inject IHttpClientFactory Http
 @inject IAuthenticationService AuthenticationService
 @inject AuthService AuthService
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -146,6 +146,13 @@
 
     private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
 
+    private HttpClient EmployeeApiClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        EmployeeApiClient = Http.CreateClient("EmployeeApi");
+    }
+
     public async Task RegisterUser() // EditContext editContext
     {
         var loggedInUserRole = await AuthService.GetUserRoleAsync();
@@ -212,7 +219,7 @@
                     }
                 };
 
-            var response = await HttpClient.PostAsJsonAsync("Employee", employee);
+        var response = await EmployeeApiClient.PostAsJsonAsync("Employee", employee);
 
             if (!response.IsSuccessStatusCode)
             {

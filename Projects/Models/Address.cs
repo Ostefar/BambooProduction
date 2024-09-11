@@ -1,7 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace Employees.Models
+namespace Projects.Models
 {
     public class Address
     {
@@ -28,7 +27,7 @@ namespace Employees.Models
         public DateTime CreatedDate { get; set; }
 
         [Required]
-        public DateTime LastUpdated { get; set; }
+        public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
 
         [Required]
         [StringLength(256)]

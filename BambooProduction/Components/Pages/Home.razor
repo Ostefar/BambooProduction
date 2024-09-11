@@ -1,9 +1,50 @@
 ﻿@page "/"
+@using Shared.Dto
+@inject IHttpClientFactory Http
 
 <PageTitle>Home</PageTitle>
 
 <h1>Bamboo Production A/S</h1>
 
+<br />
+
 Show non sensitive metrics and kpi's here
 
-also show if  its somebodys birthday
+<br />
+
+
+
+@if (employeesWithBirthday != null && employeesWithBirthday.Any())
+{
+    <br />
+    <h2>Today's birthdays</h2>
+    <br />
+    <ul>
+        @foreach (var employee in employeesWithBirthday)
+        {
+            <li>@employee.FullName, Age: @employee.Age</li>
+        }
+    </ul>
+}
+else
+{
+    <p>No birthdays today.</p>
+}
+
+@code {
+    private List<BirthdayDto> employeesWithBirthday;
+
+    private HttpClient EmployeeApiClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        EmployeeApiClient = Http.CreateClient("EmployeeApi");
+        await LoadBirthdaysToday();
+    }
+
+    private async Task LoadBirthdaysToday()
+    {
+        employeesWithBirthday = await EmployeeApiClient.GetFromJsonAsync<List<BirthdayDto>>("Employee/BirthdaysToday");
+    }
+}
+

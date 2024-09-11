@@ -47,8 +47,7 @@ namespace Employees.Models
         public DateTime CreatedDate { get; set; }
 
         [Required]
-        public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
-
+        public DateTime LastUpdated { get; set; }
         [Required]
         [StringLength(256)]
         public string LastUpdatedBy { get; set; }

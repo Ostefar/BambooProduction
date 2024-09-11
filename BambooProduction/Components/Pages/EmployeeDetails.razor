@@ -9,7 +9,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Shared.Dto
 @using System.ComponentModel.DataAnnotations
-@inject HttpClient Http
+@inject IHttpClientFactory Http
 @inject NavigationManager Navigation
 @inject AuthService AuthService
 @inject UserManager<ApplicationUser> UserManager
@@ -138,9 +138,11 @@ else
     [SupplyParameterFromForm]
     private UpdateModel Input { get; set; } = new();
     private EmployeeDto employee;
+    private HttpClient EmployeeApiClient;
 
     protected override async Task OnInitializedAsync()
     {
+        EmployeeApiClient = Http.CreateClient("EmployeeApi");
         await LoadEmployeeDetails();
     }
 
@@ -150,7 +152,7 @@ else
         if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
         {
             var requestUrl = $"Employee/{employeeId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            employee = await Http.GetFromJsonAsync<EmployeeDto>(requestUrl);
+            employee = await EmployeeApiClient.GetFromJsonAsync<EmployeeDto>(requestUrl);
 
             // Copy data from employee to Input
             if (employee != null)
@@ -213,7 +215,7 @@ else
             var requestUrl = $"Employee/{employeeId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
             try
             {
-                var response = await Http.PutAsJsonAsync(requestUrl, employeeUpdated);
+                var response = await EmployeeApiClient.PutAsJsonAsync(requestUrl, employeeUpdated);
                 if (response.IsSuccessStatusCode)
                 {
                     Navigation.NavigateTo("/employees");
@@ -259,7 +261,7 @@ else
 
             // Delete employee from api
             var requestUrl = $"Employee/{employeeId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            var response = await Http.DeleteAsync(requestUrl);
+            var response = await EmployeeApiClient.DeleteAsync(requestUrl);
             if (response.IsSuccessStatusCode)
             {
                 Navigation.NavigateTo("/employees");

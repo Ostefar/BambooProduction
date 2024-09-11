@@ -2,7 +2,7 @@
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
 @inject AuthService AuthService
-@inject HttpClient HttpClient
+@inject IHttpClientFactory Http
 @using BambooProduction.Service
 @using Microsoft.AspNetCore.Authorization
 @using Shared.Dto;
@@ -62,9 +62,11 @@
     private List<EmployeeDto> employees = new();
     private List<EmployeeDto> filteredEmployees = new();
     private InputModel Input { get; set; } = new();
+    private HttpClient EmployeeApiClient;
 
     protected override async Task OnInitializedAsync()
     {
+        EmployeeApiClient = Http.CreateClient("EmployeeApi");
         await LoadEmployees();
     }
 
@@ -74,7 +76,7 @@
         if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
         {
             var requestUrl = $"Employee?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            employees = await HttpClient.GetFromJsonAsync<List<EmployeeDto>>(requestUrl);
+            employees = await EmployeeApiClient.GetFromJsonAsync<List<EmployeeDto>>(requestUrl);
             filteredEmployees = employees;
         }
     }

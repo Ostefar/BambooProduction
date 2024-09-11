@@ -236,5 +236,27 @@ namespace Employees.Controllers
         {
             return _context.Employees.Any(e => e.Id == id);
         }
+
+        [HttpGet("BirthdaysToday")]
+        public IActionResult GetEmployeesWithBirthdayToday()
+        {
+            var today = DateTime.Today;
+
+            var employeesWithBirthday = _context.Employees
+                .Where(e => e.BirthDate.Month == today.Month && e.BirthDate.Day == today.Day)
+                .Select(e => new
+                {
+                    FullName = $"{e.FirstName} {e.LastName}",
+                    Age = today.Year - e.BirthDate.Year - (e.BirthDate > today.AddYears(-(today.Year - e.BirthDate.Year)) ? 1 : 0) 
+                })
+                .ToList();
+
+            if (employeesWithBirthday.Count == 0)
+            {
+                return Ok(new { message = "No birthdays today" });
+            }
+
+            return Ok(employeesWithBirthday);
+        }
     }
 }

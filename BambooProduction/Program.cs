@@ -20,7 +20,15 @@ builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7056/api/") });
+builder.Services.AddHttpClient("EmployeeApi", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7056/api/");
+});
+
+builder.Services.AddHttpClient("CompanyApi", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7057/api/"); // skal ændres til den rigtige url
+});
 
 
 builder.Services.AddAuthorization();
