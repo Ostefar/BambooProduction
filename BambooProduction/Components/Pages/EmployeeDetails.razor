@@ -146,6 +146,9 @@ else
 
     private async Task UpdateEmployee()
     {
+
+        // husk at opdatere LastUpdated og lastUpdated by både for employee og address
+
         var loggedInUserRole = await AuthService.GetUserRoleAsync();
         if (loggedInUserRole == "Admin")
         {
@@ -164,6 +167,8 @@ else
 
     private async Task DeleteEmployee()
     {
+
+        // husk at slette brugeren i identity først, og så lave api kaldet der sletter employee + address.
         var loggedInUserRole = await AuthService.GetUserRoleAsync();
         if (loggedInUserRole == "Admin")
         {

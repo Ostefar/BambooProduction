@@ -162,7 +162,7 @@ Migrations/
 *.der
 
 # Solution files
-*.sln
+.sln
 
 # Razor components (only if auto-generated)
 *.g.cshtml
