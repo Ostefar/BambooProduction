@@ -81,6 +81,7 @@ namespace Employees.Controllers
                     Phone = e.Phone,
                     Email = e.Email,
                     JobTitle = e.JobTitle,
+                    UserId = e.UserId,
                     BirthDate = e.BirthDate,
                     HiringDate = e.HiringDate,
                     CreatedDate = e.CreatedDate,
@@ -163,7 +164,6 @@ namespace Employees.Controllers
                     return NotFound();
                 }
 
-                // ændrer til kun at opdatere ønskede fields
                 // Update employee details
                 existingEmployee.FirstName = employee.FirstName;
                 existingEmployee.LastName = employee.LastName;
@@ -173,7 +173,7 @@ namespace Employees.Controllers
                 existingEmployee.BirthDate = employee.BirthDate;
                 existingEmployee.HiringDate = employee.HiringDate;
                 existingEmployee.LastUpdated = DateTime.UtcNow;
-                existingEmployee.LastUpdatedBy = employee.LastUpdatedBy;  //  sæt fielded i frontend
+                existingEmployee.LastUpdatedBy = employee.LastUpdatedBy;  
 
                 // Update address details
                 existingEmployee.Address.AddressLine = employee.Address.AddressLine;
@@ -181,7 +181,7 @@ namespace Employees.Controllers
                 existingEmployee.Address.ZipCode = employee.Address.ZipCode;
                 existingEmployee.Address.Country = employee.Address.Country;
                 existingEmployee.Address.LastUpdated = DateTime.UtcNow;
-                existingEmployee.Address.LastUpdatedBy = employee.LastUpdatedBy; // h sæt fielded i frontend
+                existingEmployee.Address.LastUpdatedBy = employee.LastUpdatedBy;
 
                 try
                 {
@@ -214,7 +214,6 @@ namespace Employees.Controllers
         {
             if (loggedInUserRole == "Admin")
             {
-                // ændrer til også at slette den associaserede bruger (skal ske fra frontenden - se deletePersonalData - før deleteEmployee bliver kaldt
                 var employee = await _context.Employees
                     .Include(e => e.Address)
                     .FirstOrDefaultAsync(e => e.Id == id);

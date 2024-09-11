@@ -122,7 +122,7 @@
             <div class="col-md-4">
                 <button type="submit" class="w-100 btn btn-lg btn-primary">Update</button>
                 <br>
-                <button type="button" class="w-100 btn btn-lg btn-danger" @onclick="DeleteEmployee">Delete</button>
+                <button type="button" class="w-100 btn btn-lg btn-danger" @onclick="() => DeleteEmployee(employee.UserId)">Delete</button>
             </div>
         </div>
     </EditForm>
@@ -161,8 +161,6 @@ else
                 Input.Email = employee.Email;
                 Input.JobTitle = employee.JobTitle;
                 Input.BirthDate = employee.BirthDate;
-                Input.HiringDate = employee.HiringDate;
-
                 Input.AddressLine = employee.Address.AddressLine;
                 Input.City = employee.Address.City;
                 Input.ZipCode = employee.Address.ZipCode;
@@ -175,7 +173,6 @@ else
     {
         var userEmail = "";
 
-        // husk at opdatere LastUpdated og lastUpdated by både for employee og address
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         var identityUser = await UserManager.GetUserAsync(user);
@@ -211,25 +208,53 @@ else
                     }
                 };
             var requestUrl = $"Employee/{employeeId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            var response = await Http.PutAsJsonAsync(requestUrl, employeeUpdated);
-            if (response.IsSuccessStatusCode)
+            try
             {
-                Navigation.NavigateTo("/employees");
+                var response = await Http.PutAsJsonAsync(requestUrl, employeeUpdated);
+                if (response.IsSuccessStatusCode)
+                {
+                    Navigation.NavigateTo("/employees");
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // Handle error
+                Console.WriteLine($"Exception: {ex.Message}");
             }
         }
     }
 
-    private async Task DeleteEmployee()
+    private async Task DeleteEmployee(String userId)
     {
-
-        // husk at slette brugeren i identity først, og så lave api kaldet der sletter employee + address.
         var loggedInUserRole = await AuthService.GetUserRoleAsync();
+
         if (loggedInUserRole == "Admin")
         {
+            // Fetch the identity user using the userId
+            var identityUser = await UserManager.FindByIdAsync(userId.ToString());
+            if (identityUser != null)
+            {
+                // Delete the identity user
+                var deleteUserResult = await UserManager.DeleteAsync(identityUser);
+                if (!deleteUserResult.Succeeded)
+                {
+                    var errors = string.Join(", ", deleteUserResult.Errors.Select(e => e.Description));
+                    Console.WriteLine($"Error deleting identity user: {errors}");
+
+                    return;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Identity user not found.");
+                return;
+            }
+
+            // Delete employee from api
             var requestUrl = $"Employee/{employeeId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
             var response = await Http.DeleteAsync(requestUrl);
             if (response.IsSuccessStatusCode)
@@ -238,8 +263,15 @@ else
             }
             else
             {
-                // Handle error
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
+
             }
         }
+        else
+        {
+            Console.WriteLine("Unauthorized: Admin role required.");
+        }
     }
+}
 }
