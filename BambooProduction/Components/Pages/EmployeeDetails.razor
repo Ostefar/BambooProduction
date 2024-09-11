@@ -1,13 +1,19 @@
 ﻿@page "/Employee-details/{employeeId:guid}"
+@attribute [Authorize(Roles = "Admin")]
+@rendermode InteractiveServer
+
+@using BambooProduction.Data
+@using BambooProduction.Models.Employee
+@using BambooProduction.Service
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Shared
+@using System.ComponentModel.DataAnnotations
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject AuthService AuthService
-@using BambooProduction.Service
-@using Microsoft.AspNetCore.Authorization
-@using Shared
-@using System.ComponentModel.DataAnnotations
-
-@attribute [Authorize(Roles = "Admin")]
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <h3>Employee details</h3>
 
@@ -15,108 +21,110 @@
 
 @if (employee != null)
 {
-    
-    <EditForm Model="employee" OnValidSubmit="UpdateEmployee">
+    <EditForm Model="Input" method="put" OnValidSubmit="UpdateEmployee" FormName="updateEmployee" >
         <DataAnnotationsValidator />
         <ValidationSummary class="text-danger" />
 
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-2">
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="employee.FirstName" class="form-control" placeholder="First Name" />
+                    <InputText @bind-Value="Input.FirstName" class="form-control" placeholder="First Name" />
                     <label for="firstName">First Name</label>
-                    <ValidationMessage For="() => employee.FirstName" class="text-danger" />
+                    <ValidationMessage For="() => Input.FirstName" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="employee.LastName" class="form-control" placeholder="Last Name" />
+                    <InputText @bind-Value="Input.LastName" class="form-control" placeholder="Last Name" />
                     <label for="lastName">Last Name</label>
-                    <ValidationMessage For="() => employee.LastName" class="text-danger" />
+                    <ValidationMessage For="() => Input.LastName" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="employee.Phone" class="form-control" placeholder="Phone" />
+                    <InputText @bind-Value="Input.Phone" class="form-control" placeholder="Phone" />
                     <label for="phone">Phone</label>
-                    <ValidationMessage For="() => employee.Phone" class="text-danger" />
+                    <ValidationMessage For="() => Input.Phone" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="employee.Email" class="form-control" placeholder="Email" />
+                    <InputText @bind-Value="Input.Email" class="form-control" placeholder="Email" />
                     <label for="email">Email</label>
-                    <ValidationMessage For="() => employee.Email" class="text-danger" />
+                    <ValidationMessage For="() => Input.Email" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputSelect @bind-Value="employee.JobTitle" class="form-control" placeholder="Job Title">
+                    <InputSelect @bind-Value="Input.JobTitle" class="form-control" placeholder="Job Title">
                         <option value="1">CEO</option>
                         <option value="2">Sales</option>
                         <option value="3">Production</option>
                     </InputSelect>
                     <label for="jobTitle">Job Title</label>
-                    <ValidationMessage For="() => employee.JobTitle" class="text-danger" />
+                    <ValidationMessage For="() => Input.JobTitle" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputDate @bind-Value="employee.BirthDate" class="form-control" placeholder="Birth Date" min="1900-01-01" max="2100-12-31" />
+                    <InputDate @bind-Value="Input.BirthDate" class="form-control" placeholder="Birth Date" min="1900-01-01" max="2100-12-31" />
                     <label for="birthDate">Birth Date</label>
-                    <ValidationMessage For="() => employee.BirthDate" class="text-danger" />
+                    <ValidationMessage For="() => Input.BirthDate" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputDate @bind-Value="employee.HiringDate" class="form-control" placeholder="Hiring Date" min="1900-01-01" max="2100-12-31" />
+                    <InputDate @bind-Value="Input.HiringDate" class="form-control" placeholder="Hiring Date" min="1900-01-01" max="2100-12-31" />
                     <label for="hiringDate">Hiring Date</label>
-                    <ValidationMessage For="() => employee.HiringDate" class="text-danger" />
+                    <ValidationMessage For="() => Input.HiringDate" class="text-danger" />
                 </div>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-2">
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="employee.Address.AddressLine" class="form-control" placeholder="Address Line" />
+                    <InputText @bind-Value="Input.AddressLine" class="form-control" placeholder="Address Line" />
                     <label for="addressLine">Address Line</label>
-                    <ValidationMessage For="() => employee.Address.AddressLine" class="text-danger" />
+                    <ValidationMessage For="() => Input.AddressLine" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="employee.Address.City" class="form-control" placeholder="City" />
+                    <InputText @bind-Value="Input.City" class="form-control" placeholder="City" />
                     <label for="city">City</label>
-                    <ValidationMessage For="() => employee.Address.City" class="text-danger" />
+                    <ValidationMessage For="() => Input.City" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="employee.Address.ZipCode" class="form-control" placeholder="Zip Code" />
+                    <InputText @bind-Value="Input.ZipCode" class="form-control" placeholder="Zip Code" />
                     <label for="zipCode">Zip Code</label>
-                    <ValidationMessage For="() => employee.Address.ZipCode" class="text-danger" />
+                    <ValidationMessage For="() => Input.ZipCode" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="employee.Address.Country" class="form-control" placeholder="Country" />
+                    <InputText @bind-Value="Input.Country" class="form-control" placeholder="Country" />
                     <label for="country">Country</label>
-                    <ValidationMessage For="() => employee.Address.Country" class="text-danger" />
+                    <ValidationMessage For="() => Input.Country" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputDate @bind-Value="employee.CreatedDate" class="form-control" placeholder="Created Date" min="1900-01-01" max="2100-12-31" disabled/>
+                    <InputDate @bind-Value="Input.CreatedDate" class="form-control" placeholder="Created Date" min="1900-01-01" max="2100-12-31" disabled />
                     <label for="createdDate">Created Date</label>
-                    <ValidationMessage For="() => employee.CreatedDate" class="text-danger" />
+                    <ValidationMessage For="() => Input.CreatedDate" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputDate @bind-Value="employee.LastUpdated" class="form-control" placeholder="Last Updated" min="1900-01-01" max="2100-12-31" disabled />
+                    <InputDate @bind-Value="Input.LastUpdated" class="form-control" placeholder="Last Updated" min="1900-01-01" max="2100-12-31" disabled />
                     <label for="lastUpdated">Last Updated</label>
-                    <ValidationMessage For="() => employee.LastUpdated" class="text-danger" />
+                    <ValidationMessage For="() => Input.LastUpdated" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="employee.LastUpdatedBy" class="form-control" placeholder="Last Updated By"  disabled />
+                    <InputText @bind-Value="Input.LastUpdatedBy" class="form-control" placeholder="Last Updated By" disabled />
                     <label for="lastUpdatedBy">Last Updated By</label>
-                    <ValidationMessage For="() => employee.LastUpdatedBy" class="text-danger" />
+                    <ValidationMessage For="() => Input.LastUpdatedBy" class="text-danger" />
                 </div>
             </div>
         </div>
-
-        <button type="submit" class="w-100 btn btn-lg btn-primary">Update</button>
-        <br>
-        <button type="button" class="w-100 btn btn-lg btn-danger" @onclick="DeleteEmployee">Delete</button>
+        <div class="row">
+            <div class="col-md-4">
+                <button type="submit" class="w-100 btn btn-lg btn-primary">Update</button>
+                <br>
+                <button type="button" class="w-100 btn btn-lg btn-danger" @onclick="DeleteEmployee">Delete</button>
+            </div>
+        </div>
     </EditForm>
 
 }
@@ -127,6 +135,8 @@ else
 
 @code {
     [Parameter] public Guid employeeId { get; set; }
+    [SupplyParameterFromForm]
+    private UpdateModel Input { get; set; } = new();
     private EmployeeDto employee;
 
     protected override async Task OnInitializedAsync()
@@ -141,19 +151,67 @@ else
         {
             var requestUrl = $"Employee/{employeeId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
             employee = await Http.GetFromJsonAsync<EmployeeDto>(requestUrl);
+
+            // Copy data from employee to Input
+            if (employee != null)
+            {
+                Input.FirstName = employee.FirstName;
+                Input.LastName = employee.LastName;
+                Input.Phone = employee.Phone;
+                Input.Email = employee.Email;
+                Input.JobTitle = employee.JobTitle;
+                Input.BirthDate = employee.BirthDate;
+                Input.HiringDate = employee.HiringDate;
+
+                Input.AddressLine = employee.Address.AddressLine;
+                Input.City = employee.Address.City;
+                Input.ZipCode = employee.Address.ZipCode;
+                Input.Country = employee.Address.Country;
+            }
         }
     }
 
     private async Task UpdateEmployee()
     {
+        var userEmail = "";
 
         // husk at opdatere LastUpdated og lastUpdated by både for employee og address
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var identityUser = await UserManager.GetUserAsync(user);
+        if (identityUser != null)
+        {
+            userEmail = await UserManager.GetEmailAsync(identityUser);
+        }
 
         var loggedInUserRole = await AuthService.GetUserRoleAsync();
         if (loggedInUserRole == "Admin")
         {
+            var employeeUpdated = new EmployeeDto
+                {
+                    FirstName = Input.FirstName,
+                    LastName = Input.LastName,
+                    Phone = Input.Phone,
+                    Email = Input.Email,
+                    JobTitle = Input.JobTitle,
+                    BirthDate = Input.BirthDate,
+                    HiringDate = Input.HiringDate,
+                    LoggedInUserRole = loggedInUserRole,
+                    CreatedDate = DateTime.Now,
+                    LastUpdated = DateTime.Now,
+                    LastUpdatedBy = userEmail,
+                    Address = new AddressDto
+                    {
+                        AddressLine = Input.AddressLine,
+                        City = Input.City,
+                        ZipCode = Input.ZipCode,
+                        Country = Input.Country,
+                        LastUpdated = DateTime.Now,
+                        LastUpdatedBy = userEmail,
+                    }
+                };
             var requestUrl = $"Employee/{employeeId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            var response = await Http.PutAsJsonAsync(requestUrl, employee);
+            var response = await Http.PutAsJsonAsync(requestUrl, employeeUpdated);
             if (response.IsSuccessStatusCode)
             {
                 Navigation.NavigateTo("/employees");

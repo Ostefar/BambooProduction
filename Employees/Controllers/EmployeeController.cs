@@ -27,7 +27,7 @@ namespace Employees.Controllers
             taskConverter = converter;
         }
 
-        // GET: api/Employee
+        // GET: api/Employees
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetEmployees([FromQuery] String loggedInUserRole)
         {
@@ -36,55 +36,31 @@ namespace Employees.Controllers
             if (loggedInUserRole == "Admin")
             {
                 employees = await _context.Employees
-                .Select(e => new EmployeeDto
-                {
-                    Id = e.Id,
-                    FirstName = e.FirstName,
-                    LastName = e.LastName,
-                    Phone = e.Phone,
-                    Email = e.Email,
-                    JobTitle = e.JobTitle,
-                    BirthDate = e.BirthDate,
-                    HiringDate = e.HiringDate,
-                    CreatedDate = e.CreatedDate,
-                    LastUpdated = e.LastUpdated,
-                    LastUpdatedBy = e.LastUpdatedBy,
-                    Address = new AddressDto
-                    {
-                        AddressLine = e.Address.AddressLine,
-                        City = e.Address.City,
-                        ZipCode = e.Address.ZipCode,
-                        Country = e.Address.Country,
-                        CreatedDate = e.CreatedDate,
-                        LastUpdated = e.LastUpdated,
-                        LastUpdatedBy = e.LastUpdatedBy,
-                    }
-                })
-                .ToListAsync();
+                  .Select(e => new EmployeeDto
+                  {
+                      Id = e.Id,
+                      FirstName = e.FirstName,
+                      LastName = e.LastName,
+                      Phone = e.Phone,
+                      Email = e.Email,
+                      LastUpdated = e.LastUpdated,
+                      LastUpdatedBy = e.LastUpdatedBy,
+                      Address = new AddressDto
+                      {
+                          City = e.Address.City,
+                          Country = e.Address.Country,
+                          LastUpdated = e.LastUpdated,
+                          LastUpdatedBy = e.LastUpdatedBy,
+                      }
+                  })
+                  .ToListAsync();
+
+                return Ok(employees);
             }
             else
             {
-                employees = await _context.Employees
-                .Select(e => new EmployeeDto
-                {
-                    FirstName = e.FirstName,
-                    LastName = e.LastName,
-                    Phone = e.Phone,
-                    Email = e.Email,
-                    LastUpdated = e.LastUpdated,
-                    LastUpdatedBy = e.LastUpdatedBy,
-                    Address = new AddressDto
-                    {
-                        City = e.Address.City,
-                        Country = e.Address.Country,
-                        LastUpdated = e.LastUpdated,
-                        LastUpdatedBy = e.LastUpdatedBy,
-                    }
-                })
-                .ToListAsync();
+                return Unauthorized("You are not allowed to do this");
             }
-
-            return Ok(employees);
         }
 
 
@@ -125,7 +101,7 @@ namespace Employees.Controllers
             }
             else
             {
-                Unauthorized("You are not allowed to do this");
+                return Unauthorized("You are not allowed to do this");
             }
 
             if (employee == null)
@@ -156,8 +132,6 @@ namespace Employees.Controllers
 
                 // Set fields
                 employee.Id = Guid.NewGuid();
-                employee.CreatedDate = DateTime.UtcNow;
-                employee.LastUpdated = DateTime.UtcNow;
                 employee.AddressId = Guid.NewGuid();
 
                 // Convert dto to model
@@ -175,72 +149,63 @@ namespace Employees.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutEmployee(Guid id, Employee employee)
+        public async Task<IActionResult> PutEmployee(Guid id, EmployeeDto employee, [FromQuery] String loggedInUserRole)
         {
-            // ikke redigeret endnu
-            if (id != employee.Id)
+
+            if (employee.LoggedInUserRole == "Admin")
             {
-                return BadRequest();
-            }
+                var existingEmployee = await _context.Employees
+                    .Include(e => e.Address)
+                    .FirstOrDefaultAsync(e => e.Id == id);
 
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var existingEmployee = await _context.Employees
-                .Include(e => e.Address)
-                .FirstOrDefaultAsync(e => e.Id == id);
-
-            if (existingEmployee == null)
-            {
-                return NotFound();
-            }
-
-            // Get the current user's UserId
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                return Unauthorized();
-            }
-
-            // ændrer til kun at opdatere ønskede fields
-            // Update employee details
-            existingEmployee.FirstName = employee.FirstName;
-            existingEmployee.LastName = employee.LastName;
-            existingEmployee.Phone = employee.Phone;
-            existingEmployee.Email = employee.Email;
-            existingEmployee.JobTitle = employee.JobTitle;
-            existingEmployee.BirthDate = employee.BirthDate;
-            existingEmployee.HiringDate = employee.HiringDate;
-            existingEmployee.LastUpdated = DateTime.UtcNow;
-            existingEmployee.LastUpdatedBy = employee.FirstName + " " + employee.LastName; 
-
-            // Update address details
-            existingEmployee.Address.AddressLine = employee.Address.AddressLine;
-            existingEmployee.Address.City = employee.Address.City;
-            existingEmployee.Address.ZipCode = employee.Address.ZipCode;
-            existingEmployee.Address.Country = employee.Address.Country;
-            existingEmployee.Address.LastUpdated = DateTime.UtcNow;
-            existingEmployee.Address.LastUpdatedBy = employee.FirstName + " " + employee.LastName;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!EmployeeExists(id))
+                if (existingEmployee == null)
                 {
                     return NotFound();
                 }
-                else
-                {
-                    throw;
-                }
-            }
 
-            return NoContent();
+                // ændrer til kun at opdatere ønskede fields
+                // Update employee details
+                existingEmployee.FirstName = employee.FirstName;
+                existingEmployee.LastName = employee.LastName;
+                existingEmployee.Phone = employee.Phone;
+                existingEmployee.Email = employee.Email;
+                existingEmployee.JobTitle = employee.JobTitle;
+                existingEmployee.BirthDate = employee.BirthDate;
+                existingEmployee.HiringDate = employee.HiringDate;
+                existingEmployee.LastUpdated = DateTime.UtcNow;
+                existingEmployee.LastUpdatedBy = employee.LastUpdatedBy;  //  sæt fielded i frontend
+
+                // Update address details
+                existingEmployee.Address.AddressLine = employee.Address.AddressLine;
+                existingEmployee.Address.City = employee.Address.City;
+                existingEmployee.Address.ZipCode = employee.Address.ZipCode;
+                existingEmployee.Address.Country = employee.Address.Country;
+                existingEmployee.Address.LastUpdated = DateTime.UtcNow;
+                existingEmployee.Address.LastUpdatedBy = employee.LastUpdatedBy; // h sæt fielded i frontend
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!EmployeeExists(id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+
+                return Ok("Updated successfully");
+
+            }
+            else
+            {
+                return Unauthorized(employee.FirstName + " " + employee.LastName);
+            }
         }
 
         // DELETE: api/Employee/5

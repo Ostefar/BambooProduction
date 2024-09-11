@@ -1,6 +1,5 @@
 ﻿@page "/Employees"
 @rendermode InteractiveServer
-@inject HttpClient Http
 @inject NavigationManager Navigation
 @inject AuthService AuthService
 @inject HttpClient HttpClient
@@ -75,7 +74,7 @@
         if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
         {
             var requestUrl = $"Employee?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            employees = await Http.GetFromJsonAsync<List<EmployeeDto>>(requestUrl);
+            employees = await HttpClient.GetFromJsonAsync<List<EmployeeDto>>(requestUrl);
             filteredEmployees = employees;
         }
     }
