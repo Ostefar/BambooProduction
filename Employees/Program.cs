@@ -11,7 +11,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Employees.Models;
 using System.Threading.Tasks;
-using Shared;
+using Shared.Dto;
+using Shared.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 

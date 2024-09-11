@@ -7,7 +7,7 @@
 @using BambooProduction.Service
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
-@using Shared
+@using Shared.Dto
 @using System.ComponentModel.DataAnnotations
 @inject HttpClient Http
 @inject NavigationManager Navigation
@@ -28,14 +28,14 @@
         <div class="row">
             <div class="col-md-2">
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.FirstName" class="form-control" placeholder="First Name" />
-                    <label for="firstName">First Name</label>
+                    <InputText @bind-Value="Input.FirstName" class="form-control" placeholder="First name" />
+                    <label for="firstName">First name</label>
                     <ValidationMessage For="() => Input.FirstName" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.LastName" class="form-control" placeholder="Last Name" />
-                    <label for="lastName">Last Name</label>
+                    <InputText @bind-Value="Input.LastName" class="form-control" placeholder="Last name" />
+                    <label for="lastName">Last name</label>
                     <ValidationMessage For="() => Input.LastName" class="text-danger" />
                 </div>
 
@@ -52,32 +52,32 @@
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputSelect @bind-Value="Input.JobTitle" class="form-control" placeholder="Job Title">
+                    <InputSelect @bind-Value="Input.JobTitle" class="form-control" placeholder="Job title">
                         <option value="1">CEO</option>
                         <option value="2">Sales</option>
                         <option value="3">Production</option>
                     </InputSelect>
-                    <label for="jobTitle">Job Title</label>
+                    <label for="jobTitle">Job title</label>
                     <ValidationMessage For="() => Input.JobTitle" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputDate @bind-Value="Input.BirthDate" class="form-control" placeholder="Birth Date" min="1900-01-01" max="2100-12-31" />
-                    <label for="birthDate">Birth Date</label>
+                    <InputDate @bind-Value="Input.BirthDate" class="form-control" placeholder="Birth date" min="1900-01-01" max="2100-12-31" />
+                    <label for="birthDate">Birth date</label>
                     <ValidationMessage For="() => Input.BirthDate" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputDate @bind-Value="Input.HiringDate" class="form-control" placeholder="Hiring Date" min="1900-01-01" max="2100-12-31" />
-                    <label for="hiringDate">Hiring Date</label>
+                    <InputDate @bind-Value="Input.HiringDate" class="form-control" placeholder="Hiring date" min="1900-01-01" max="2100-12-31" />
+                    <label for="hiringDate">Hiring date</label>
                     <ValidationMessage For="() => Input.HiringDate" class="text-danger" />
                 </div>
             </div>
 
             <div class="col-md-2">
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.AddressLine" class="form-control" placeholder="Address Line" />
-                    <label for="addressLine">Address Line</label>
+                    <InputText @bind-Value="Input.AddressLine" class="form-control" placeholder="Address" />
+                    <label for="addressLine">Address</label>
                     <ValidationMessage For="() => Input.AddressLine" class="text-danger" />
                 </div>
 
@@ -88,8 +88,8 @@
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.ZipCode" class="form-control" placeholder="Zip Code" />
-                    <label for="zipCode">Zip Code</label>
+                    <InputText @bind-Value="Input.ZipCode" class="form-control" placeholder="Zip code" />
+                    <label for="zipCode">Zip code</label>
                     <ValidationMessage For="() => Input.ZipCode" class="text-danger" />
                 </div>
 
@@ -100,20 +100,20 @@
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputDate @bind-Value="Input.CreatedDate" class="form-control" placeholder="Created Date" min="1900-01-01" max="2100-12-31" disabled />
-                    <label for="createdDate">Created Date</label>
+                    <InputDate @bind-Value="Input.CreatedDate" class="form-control" placeholder="Creation date" min="1900-01-01" max="2100-12-31" disabled />
+                    <label for="createdDate">Creation date</label>
                     <ValidationMessage For="() => Input.CreatedDate" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputDate @bind-Value="Input.LastUpdated" class="form-control" placeholder="Last Updated" min="1900-01-01" max="2100-12-31" disabled />
-                    <label for="lastUpdated">Last Updated</label>
+                    <InputDate @bind-Value="Input.LastUpdated" class="form-control" placeholder="Last updated" min="1900-01-01" max="2100-12-31" disabled />
+                    <label for="lastUpdated">Last updated</label>
                     <ValidationMessage For="() => Input.LastUpdated" class="text-danger" />
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.LastUpdatedBy" class="form-control" placeholder="Last Updated By" disabled />
-                    <label for="lastUpdatedBy">Last Updated By</label>
+                    <InputText @bind-Value="Input.LastUpdatedBy" class="form-control" placeholder="Last updated by" disabled />
+                    <label for="lastUpdatedBy">Last updated by</label>
                     <ValidationMessage For="() => Input.LastUpdatedBy" class="text-danger" />
                 </div>
             </div>
@@ -161,6 +161,9 @@ else
                 Input.Email = employee.Email;
                 Input.JobTitle = employee.JobTitle;
                 Input.BirthDate = employee.BirthDate;
+                Input.CreatedDate = employee.CreatedDate;
+                Input.LastUpdated = employee.LastUpdated;
+                Input.LastUpdatedBy = employee.LastUpdatedBy;
                 Input.AddressLine = employee.Address.AddressLine;
                 Input.City = employee.Address.City;
                 Input.ZipCode = employee.Address.ZipCode;
@@ -273,5 +276,4 @@ else
             Console.WriteLine("Unauthorized: Admin role required.");
         }
     }
-}
 }

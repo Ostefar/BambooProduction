@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Shared;
+using Shared.Dto;
+using Shared.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -125,13 +126,10 @@ namespace Employees.Controllers
                     return BadRequest(ModelState);
                 }
 
-                // Check the current user's UserId
                 if (employee.UserId == null)
                 {
                     return Unauthorized();
                 }
-
-                // Set fields
                 employee.Id = Guid.NewGuid();
                 employee.AddressId = Guid.NewGuid();
 

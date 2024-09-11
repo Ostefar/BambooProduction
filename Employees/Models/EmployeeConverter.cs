@@ -1,4 +1,5 @@
-﻿using Shared;
+﻿using Shared.Dto;
+using Shared.Interfaces;
 
 namespace Employees.Models
 {

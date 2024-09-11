@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Shared
+namespace Shared.Dto
 {
     public class AddressDto
     {
