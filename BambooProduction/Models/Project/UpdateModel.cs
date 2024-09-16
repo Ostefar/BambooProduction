@@ -1,59 +1,38 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Shared.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace BambooProduction.Models.Project
 {
     public class UpdateModel
     {
         [Required]
-        [StringLength(50, MinimumLength = 2)]
-        public string CompanyName { get; set; }
+        [StringLength(maximumLength: 50, MinimumLength = 2)]
+        public string ProjectName { get; set; }
 
         [Required]
-        [StringLength(8)]
-        public string Cvr { get; set; }
+        [StringLength(maximumLength: 200, MinimumLength = 2)]
+        public string ProjectDescription { get; set; }
 
         [Required]
-        [StringLength(50, MinimumLength = 2)]
-        public string ContactPersonFirstName { get; set; }
+        public PriorityEnum Priority { get; set; }
 
         [Required]
-        [StringLength(50, MinimumLength = 2)]
-        public string ContactPersonLastName { get; set; }
+        public BillingTypeEnum BillingType { get; set; }
 
         [Required]
-        [StringLength(8)]
-        public string ContactPersonPhone { get; set; }
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:dd-MM-yyyy}", ApplyFormatInEditMode = true)]
+        public DateTime StartDate { get; set; } = DateTime.Today;
 
         [Required]
-        [StringLength(65, MinimumLength = 2)]
-        [EmailAddress(ErrorMessage = "Invalid Email Address")]
-        public string ContactPersonEmail { get; set; }
-
-        [Required]
-        [StringLength(100, MinimumLength = 2)]
-        public string AddressLine { get; set; }
-
-        [Required]
-        [StringLength(168, MinimumLength = 2)]
-        public string City { get; set; }
-
-        [Required]
-        [StringLength(4, MinimumLength = 4)]
-        public string ZipCode { get; set; }
-
-        [Required]
-        [StringLength(56)]
-        public string Country { get; set; }
-
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:dd-MM-yyyy}", ApplyFormatInEditMode = true)]
+        public DateTime EndDate { get; set; } = DateTime.Today.AddDays(1);
         [Required]
         public Guid CustomerId { get; set; }
 
         [Required]
         public Guid EmployeeId { get; set; }
-
-        [Required]
-        [DataType(DataType.Date)]
-        public DateTime HiringDate { get; set; } = DateTime.Today;
 
         public DateTime CreatedDate { get; set; }
 

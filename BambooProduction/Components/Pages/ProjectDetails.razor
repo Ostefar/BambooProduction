@@ -1,14 +1,266 @@
-﻿@page "/Project-details"
+﻿@page "/Project-details/{projectId:guid}"
+@using BambooProduction.Data
+@using BambooProduction.Models.Project
 @using BambooProduction.Service
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Shared.Dto
 @rendermode InteractiveServer
 @inject AuthService AuthService
+@inject AuthService AuthService
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager Navigation
 @inject IHttpClientFactory Http
+@inject ILogger<ProjectDto> Logger
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 @attribute [Authorize(Roles = "Admin, Employee")]
 
-<h3>ProjectDetails</h3>
+<h3>Project details</h3>
+
+<hr />
+@if (project != null)
+{
+    <EditForm Model="Input" method="put" OnValidSubmit="UpdateProject" FormName="updateProject">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" role="alert" />
+
+        <div class="row">
+            <div class="col-md-2">
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.ProjectName" class="form-control" placeholder="Project name" />
+                    <label for="projectName">Project name</label>
+                    <ValidationMessage For="() => Input.ProjectName" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.ProjectDescription" class="form-control" placeholder="Project description" />
+                    <label for="projectDescription">Project description</label>
+                    <ValidationMessage For="() => Input.ProjectDescription" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <select @bind="selectedCustomerId" class="form-control">
+                        <option value="">Select a customer</option>
+                        @foreach (var customer in customers)
+                        {
+                            <option value="@customer.Id">@customer.CompanyName</option>
+                        }
+                    </select>
+                    <label for="customerId">Customer</label>
+                    <ValidationMessage For="() => selectedCustomerId" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <select @bind="selectedEmployeeId" class="form-control">
+                        <option value="">Select a employee</option>
+                        @foreach (var employee in employees)
+                        {
+                            <option value="@employee.Id">@employee.FirstName @employee.LastName</option>
+                        }
+                    </select>
+                    <label for="customerId">Assigned employee</label>
+                    <ValidationMessage For="() => selectedEmployeeId" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputDate @bind-Value="Input.StartDate" class="form-control" placeholder="Start date" min="1900-01-01" max="2100-12-31" />
+                    <label for="startDate">Start date</label>
+                    <ValidationMessage For="() => Input.StartDate" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputDate @bind-Value="Input.EndDate" class="form-control" placeholder="End date" min="1900-01-01" max="2100-12-31" />
+                    <label for="endDate">End date</label>
+                    <ValidationMessage For="() => Input.EndDate" class="text-danger" />
+                </div>
+            </div>
+            <div class="col-md-2">
+
+                <div class="form-floating mb-3">
+                    <InputDate @bind-Value="Input.CreatedDate" class="form-control" placeholder="Creation date" min="1900-01-01" max="2100-12-31" disabled />
+                    <label for="createdDate">Creation date</label>
+                    <ValidationMessage For="() => Input.CreatedDate" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputDate @bind-Value="Input.LastUpdated" class="form-control" placeholder="Last updated" min="1900-01-01" max="2100-12-31" disabled />
+                    <label for="lastUpdated">Last updated</label>
+                    <ValidationMessage For="() => Input.LastUpdated" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.LastUpdatedBy" class="form-control" placeholder="Last updated by" disabled />
+                    <label for="lastUpdatedBy">Last updated by</label>
+                    <ValidationMessage For="() => Input.LastUpdatedBy" class="text-danger" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <button type="submit" class="w-100 btn btn-lg btn-warning">Update</button>
+                <br>
+                <button type="button" class="w-100 btn btn-lg btn-danger" @onclick="() => DeleteCustomer()">Delete</button>
+                <br>
+                <button type="button" class="w-100 btn btn-lg btn-info">Economy</button>
+            </div>
+        </div>
+    </EditForm>
+}
 
 @code {
 
+    [Parameter] public Guid projectId { get; set; }
+    [SupplyParameterFromForm]
+    private UpdateModel Input { get; set; } = new();
+    private ProjectDto project;
+    private HttpClient ProjectApiClient;
+    private List<CustomerDto> customers = new();
+
+    private List<EmployeeDto> employees = new();
+
+    private Guid selectedCustomerId;
+
+    private Guid selectedEmployeeId;
+
+    private HttpClient EmployeeApiClient;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProjectApiClient = Http.CreateClient("ProjectApi");
+        EmployeeApiClient = Http.CreateClient("EmployeeApi");
+        await LoadProjectDetails();
+        await LoadCustomers();
+        await LoadEmployees();
+    }
+
+    private async Task LoadProjectDetails()
+    {
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
+        {
+
+            var requestUrl = $"Project/{projectId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            project = await ProjectApiClient.GetFromJsonAsync<ProjectDto>(requestUrl);
+
+            // Copy data from project to Input
+            if (project != null)
+            {
+                Input.ProjectName = project.ProjectName;
+                Input.ProjectDescription = project.ProjectDescription;
+                Input.Priority = project.Priority;
+                Input.BillingType = project.BillingType;
+                Input.StartDate = project.StartDate;
+                Input.EndDate = project.EndDate;
+                Input.CustomerId = project.CustomerId;
+                Input.EmployeeId = project.EmployeeId;
+                Input.CreatedDate = project.CreatedDate;
+                Input.LastUpdatedBy = project.LastUpdatedBy;
+                Input.LastUpdated = project.LastUpdated;
+
+                // Set selected IDs for the select elements
+                selectedCustomerId = project.CustomerId;
+                selectedEmployeeId = project.EmployeeId;
+
+            }
+        }
+    }
+
+    private async Task LoadCustomers()
+    {
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
+        {
+            var requestUrl = $"Customer?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            customers = await ProjectApiClient.GetFromJsonAsync<List<CustomerDto>>(requestUrl);
+        }
+    }
+
+    private async Task LoadEmployees()
+    {
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
+        {
+            var requestUrl = $"Employee?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            employees = await EmployeeApiClient.GetFromJsonAsync<List<EmployeeDto>>(requestUrl);
+        }
+    }
+
+    private async Task UpdateProject()
+    {
+        var userEmail = "";
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var identityUser = await UserManager.GetUserAsync(user);
+        if (identityUser != null)
+        {
+            userEmail = await UserManager.GetEmailAsync(identityUser);
+        }
+
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+        if (loggedInUserRole == "Admin")
+        {
+            var projectUpdated = new ProjectDto
+                {
+                    ProjectName = Input.ProjectName,
+                    ProjectDescription = Input.ProjectDescription,
+                    Priority = Input.Priority,
+                    BillingType = Input.BillingType,
+                    StartDate = Input.StartDate,
+                    EndDate = Input.EndDate,
+                    CustomerId = selectedCustomerId,
+                    EmployeeId = selectedEmployeeId,
+                    LoggedInUserRole = loggedInUserRole,
+                    CreatedDate = DateTime.Now,
+                    LastUpdated = DateTime.Now,
+                    LastUpdatedBy = userEmail,
+                };
+            var requestUrl = $"Project/{projectId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            try
+            {
+                var response = await ProjectApiClient.PutAsJsonAsync(requestUrl, projectUpdated);
+                if (response.IsSuccessStatusCode)
+                {
+                    Navigation.NavigateTo("/projects");
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task DeleteCustomer()
+    {
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+
+        if (loggedInUserRole == "Admin")
+        {
+            // Delete project from api
+            var requestUrl = $"Project/{projectId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            var response = await ProjectApiClient.DeleteAsync(requestUrl);
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/projects");
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
+
+            }
+        }
+        else
+        {
+            Console.WriteLine("Unauthorized: Admin role required.");
+        }
+    }
 }
