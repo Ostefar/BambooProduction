@@ -11,13 +11,12 @@
 
 <PageTitle>Employees</PageTitle>
 
-<h1>Employees</h1>
-<br />
-
 <div class="input-group mb-3">
     <input type="text" class="form-control" @bind="Input.searchTerm" placeholder="Search by name, phone, email, city, or country" />
     <button class="btn btn-primary" @onclick="SearchEmployees">Search</button>
 </div>
+
+<hr />
 
 <table class="table table-striped table-bordered">
     <thead>
@@ -44,7 +43,7 @@
                     <td>@employee.Address.City</td>
                     <td>@employee.Address.Country</td>
                     <td>
-                        <button class="btn btn-primary" @onclick="() => ViewDetails(employee.Id)">Details</button>
+                        <button class="btn btn-info" @onclick="() => ViewDetails(employee.Id)">Details</button>
                         </td>
                 </tr>
             }

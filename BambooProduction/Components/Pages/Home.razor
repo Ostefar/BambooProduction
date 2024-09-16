@@ -4,31 +4,27 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Bamboo Production A/S</h1>
-
-<br />
-
 Show non sensitive metrics and kpi's here
 
 <br />
 
-
+<hr />
 
 @if (employeesWithBirthday != null && employeesWithBirthday.Any())
 {
     <br />
-    <h2>Today's birthdays</h2>
+    <h2>Congratulations </h2>
     <br />
     <ul>
         @foreach (var employee in employeesWithBirthday)
         {
-            <li>@employee.FullName, Age: @employee.Age</li>
+            <li>@employee.FullName turns @employee.Age today</li>
         }
     </ul>
 }
 else
 {
-    <p>No birthdays today.</p>
+    <p>No birthdays today</p>
 }
 
 @code {

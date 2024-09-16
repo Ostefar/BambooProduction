@@ -17,7 +17,7 @@
 
 <h3>Employee details</h3>
 
-<br />
+<hr />
 
 @if (employee != null)
 {
@@ -120,9 +120,11 @@
         </div>
         <div class="row">
             <div class="col-md-4">
-                <button type="submit" class="w-100 btn btn-lg btn-primary">Update</button>
+                <button type="submit" class="w-100 btn btn-lg btn-warning">Update</button>
                 <br>
                 <button type="button" class="w-100 btn btn-lg btn-danger" @onclick="() => DeleteEmployee(employee.UserId)">Delete</button>
+                <br>
+                <button type="button" class="w-100 btn btn-lg btn-info">Economy</button>
             </div>
         </div>
     </EditForm>

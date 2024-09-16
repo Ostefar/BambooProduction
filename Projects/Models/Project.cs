@@ -20,6 +20,10 @@ namespace Projects.Models
         [Range(1, 3, ErrorMessage = "Priority must be between 1 and 3.")]
         public int Priority { get; set; }
 
+        [Required(ErrorMessage = "Billing type is required.")]
+        [Range(1, 2, ErrorMessage = "Billing type must be between 1 and 2.")]
+        public int BillingType { get; set; }
+
         [Required(ErrorMessage = "Start date field is required.")]
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:dd-MM-yyyy}", ApplyFormatInEditMode = true)]

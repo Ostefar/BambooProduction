@@ -253,7 +253,7 @@ namespace Employees.Controllers
 
             if (employeesWithBirthday.Count == 0)
             {
-                return Ok(new { message = "No birthdays today" });
+                return Ok(new List<object>());
             }
 
             return Ok(employeesWithBirthday);
