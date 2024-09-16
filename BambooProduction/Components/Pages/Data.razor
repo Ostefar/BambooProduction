@@ -1,0 +1,13 @@
+﻿@page "/Data"
+@using BambooProduction.Service
+@using Microsoft.AspNetCore.Authorization
+@rendermode InteractiveServer
+@inject AuthService AuthService
+@inject IHttpClientFactory Http
+@attribute [Authorize(Roles = "Admin, Employee")]
+
+<h3>Data</h3>
+
+@code {
+
+}

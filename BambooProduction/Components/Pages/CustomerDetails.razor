@@ -1,0 +1,14 @@
+﻿@page "/Customer-details"
+@using BambooProduction.Service
+@using Microsoft.AspNetCore.Authorization
+@rendermode InteractiveServer
+@inject AuthService AuthService
+@inject IHttpClientFactory Http
+
+@attribute [Authorize(Roles = "Admin, Employee")]
+
+<h3>CustomerDetails</h3>
+
+@code {
+
+}

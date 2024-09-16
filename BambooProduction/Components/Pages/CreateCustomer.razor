@@ -1,0 +1,205 @@
+﻿@page "/Create-customer"
+@using BambooProduction.Data
+@using BambooProduction.Service
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authorization
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Shared.Dto
+@rendermode InteractiveServer
+@inject AuthService AuthService
+@inject UserManager<ApplicationUser> UserManager
+@inject IAuthenticationService AuthenticationService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IHttpClientFactory Http
+@inject ILogger<CustomerDto> Logger
+
+@attribute [Authorize(Roles = "Admin, Employee")]
+
+<div class="row">
+    <div class="col-md-4">
+        <StatusMessage Message="@Message" />
+        <EditForm Model="Input" OnValidSubmit="RegisterCustomer">
+            <DataAnnotationsValidator />
+            <h2>Create a new customer</h2>
+            <hr />
+            <ValidationSummary class="text-danger" role="alert" />
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.CompanyName" class="form-control" placeholder="Company Name" />
+                <label for="companyName">Company Name</label>
+                <ValidationMessage For="() => Input.CompanyName" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Cvr" class="form-control" placeholder="CVR" />
+                <label for="cvr">CVR</label>
+                <ValidationMessage For="() => Input.Cvr" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.ContactPersonFirstName" class="form-control" placeholder="First Name" />
+                <label for="contactPersonFirstName">Contact person first name</label>
+                <ValidationMessage For="() => Input.ContactPersonFirstName" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.ContactPersonLastName" class="form-control" placeholder="Last Name" />
+                <label for="contactPersonLastName">Contact person last name</label>
+                <ValidationMessage For="() => Input.ContactPersonLastName" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.ContactPersonPhone" class="form-control" placeholder="Phone" />
+                <label for="contactPersonPhone">Contact person phone</label>
+                <ValidationMessage For="() => Input.ContactPersonPhone" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.ContactPersonEmail" class="form-control" placeholder="Email" />
+                <label for="contactPersonEmail">Contact person email</label>
+                <ValidationMessage For="() => Input.ContactPersonEmail" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.AddressLine" class="form-control" placeholder="Address Line" />
+                <label for="addressLine">Address</label>
+                <ValidationMessage For="() => Input.AddressLine" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.City" class="form-control" placeholder="City" />
+                <label for="city">City</label>
+                <ValidationMessage For="() => Input.City" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.ZipCode" class="form-control" placeholder="Zip Code" />
+                <label for="zipCode">Zip code</label>
+                <ValidationMessage For="() => Input.ZipCode" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Country" class="form-control" placeholder="Country" />
+                <label for="country">Country</label>
+                <ValidationMessage For="() => Input.Country" class="text-danger" />
+            </div>
+
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    private HttpClient ProjectApiClient;
+
+    private string? Message { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProjectApiClient = Http.CreateClient("ProjectApi");
+    }
+
+    public async Task RegisterCustomer()
+    {
+
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+
+        var userEmail = "";
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var loggedInUser = authState.User;
+        var identityUser = await UserManager.GetUserAsync(loggedInUser);
+        if (identityUser != null)
+        {
+            userEmail = await UserManager.GetEmailAsync(identityUser);
+        }
+        // Create Address
+        var address = new AddressDto
+        {
+            AddressLine = Input.AddressLine,
+            City = Input.City,
+            ZipCode = Input.ZipCode,
+            Country = Input.Country,
+            CreatedDate = DateTime.Now,
+            LastUpdated = DateTime.Now,
+            LastUpdatedBy = userEmail
+        };
+
+        // Create Customer
+        var customer = new CustomerDto
+        {
+            CompanyName = Input.CompanyName,
+            Cvr = Input.Cvr,
+            ContactPersonFirstName = Input.ContactPersonFirstName,
+            ContactPersonLastName = Input.ContactPersonLastName,
+            ContactPersonPhone = Input.ContactPersonPhone,
+            LoggedInUserRole = loggedInUserRole,
+            ContactPersonEmail = Input.ContactPersonEmail,
+            CreatedDate = DateTime.Now,
+            LastUpdated = DateTime.Now,
+            LastUpdatedBy = userEmail, 
+            Address = address
+        };
+
+        var customerResponse = await ProjectApiClient.PostAsJsonAsync("Customer", customer);
+
+        if (!customerResponse.IsSuccessStatusCode)
+        {
+            Logger.LogError("Failed to create customer.");
+            Message = "Failed to create customer.";
+            return;
+        }
+        Message = "Customer created successfully.";
+        Navigation.NavigateTo("/customers");
+    }
+
+    public class InputModel
+    {
+        [Required]
+        [StringLength(50, MinimumLength = 2)]
+        public string CompanyName { get; set; }
+
+        [Required]
+        [StringLength(8)]
+        public string Cvr { get; set; }
+
+        [Required]
+        [StringLength(50, MinimumLength = 2)]
+        public string ContactPersonFirstName { get; set; }
+
+        [Required]
+        [StringLength(50, MinimumLength = 2)]
+        public string ContactPersonLastName { get; set; }
+
+        [Required]
+        [StringLength(8)]
+        public string ContactPersonPhone { get; set; }
+
+        [Required]
+        [StringLength(65, MinimumLength = 2)]
+        [EmailAddress(ErrorMessage = "Invalid Email Address")]
+        public string ContactPersonEmail { get; set; }
+
+        [Required]
+        [StringLength(100, MinimumLength = 2)]
+        public string AddressLine { get; set; }
+
+        [Required]
+        [StringLength(168, MinimumLength = 2)]
+        public string City { get; set; }
+
+        [Required]
+        [StringLength(4, MinimumLength = 4)]
+        public string ZipCode { get; set; }
+
+        [Required]
+        [StringLength(56)]
+        public string Country { get; set; }
+    }
+
+}

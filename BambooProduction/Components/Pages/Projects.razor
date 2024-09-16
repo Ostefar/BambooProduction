@@ -1,7 +1,9 @@
 ﻿@page "/Projects"
+@using BambooProduction.Service
 @using Microsoft.AspNetCore.Authorization
 @rendermode InteractiveServer
-
+@inject AuthService AuthService
+@inject IHttpClientFactory Http
 @attribute [Authorize(Roles = "Admin, Employee")]
 
 <PageTitle>Projects</PageTitle>

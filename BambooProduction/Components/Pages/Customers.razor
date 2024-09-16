@@ -1,0 +1,120 @@
+﻿@page "/Customers"
+@using BambooProduction.Service
+@using Microsoft.AspNetCore.Authorization
+@using Shared.Dto
+@rendermode InteractiveServer
+@inject AuthService AuthService
+@inject IHttpClientFactory Http
+@inject NavigationManager Navigation
+
+@attribute [Authorize(Roles = "Admin, Employee")]
+
+<div class="input-group mb-3">
+    <input type="text" class="form-control" @bind="Input.searchTerm" placeholder="Search by ..." />
+    <button class="btn btn-primary" @onclick="SearchCustomers">Search</button>
+    <button class="btn btn-success ms-2" @onclick="CreateCustomer">+</button>
+</div>
+
+
+
+<hr />
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>Company name</th>
+            <th>Contact person</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>City</th>
+            <th>Country</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (filteredCustomers != null && filteredCustomers.Any())
+        {
+            @foreach (var data in filteredCustomers)
+            {
+                <tr>
+                    <td>@data.CompanyName</td>
+                    <td>@data.ContactPersonFirstName @data.ContactPersonLastName </td>
+                    <td>@data.ContactPersonPhone</td>
+                    <td>@data.ContactPersonEmail</td>
+                    <td>@data.Address.City</td>
+                    <td>@data.Address.Country</td>
+                    <td>
+                        <button class="btn btn-info" @onclick="() => ViewDetails(data.Id)">Details</button>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="6">No customers found.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<CustomerDto> customers = new();
+    private List<CustomerDto> filteredCustomers = new();
+    private InputModel Input { get; set; } = new();
+    private HttpClient ProjectApiClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProjectApiClient = Http.CreateClient("ProjectApi");
+        await LoadCustomers();
+    }
+
+    private async Task LoadCustomers()
+    {
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
+        {
+            var requestUrl = $"Customer?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            customers = await ProjectApiClient.GetFromJsonAsync<List<CustomerDto>>(requestUrl);
+            filteredCustomers = customers;
+        }
+    }
+
+    private void SearchCustomers()
+    {
+         if (!string.IsNullOrEmpty(Input.searchTerm))
+         {
+            filteredCustomers = customers.Where(e =>
+                 e.CompanyName.ToLower().Contains(Input.searchTerm.ToLower()) ||
+                 e.ContactPersonFirstName.ToLower().Contains(Input.searchTerm.ToLower()) ||
+                 e.ContactPersonLastName.ToLower().Contains(Input.searchTerm.ToLower()) ||
+                 e.ContactPersonPhone.ToLower().Contains(Input.searchTerm.ToLower()) ||
+                 e.ContactPersonEmail.ToLower().Contains(Input.searchTerm.ToLower()) ||
+                 e.Address.City.ToLower().Contains(Input.searchTerm.ToLower()) ||
+                 e.Address.Country.ToLower().Contains(Input.searchTerm.ToLower())
+             ).ToList();
+         }
+         else
+         {
+            filteredCustomers = customers;
+         }
+         
+        StateHasChanged();
+    }
+
+    private void ViewDetails(Guid customerId)
+    {
+        Navigation.NavigateTo($"/customer-details/{customerId}");
+    }
+
+    private void CreateCustomer()
+    {
+        Navigation.NavigateTo($"/create-customer");
+    }
+
+    private sealed class InputModel
+    {
+        public string searchTerm { get; set; } = "";
+    }
+}

@@ -27,7 +27,7 @@ builder.Services.AddHttpClient("EmployeeApi", client =>
 
 builder.Services.AddHttpClient("ProjectApi", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7057/api/"); // skal ændres til den rigtige url
+    client.BaseAddress = new Uri("https://localhost:7286/api/"); // skal ændres til den rigtige url
 });
 
 

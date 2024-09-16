@@ -33,17 +33,17 @@
     <tbody>
         @if (filteredEmployees != null && filteredEmployees.Any())
         {
-            @foreach (var employee in filteredEmployees)
+            @foreach (var data in filteredEmployees)
             {
                 <tr>
-                    <td>@employee.FirstName</td>
-                    <td>@employee.LastName</td>
-                    <td>@employee.Phone</td>
-                    <td>@employee.Email</td>
-                    <td>@employee.Address.City</td>
-                    <td>@employee.Address.Country</td>
+                    <td>@data.FirstName</td>
+                    <td>@data.LastName</td>
+                    <td>@data.Phone</td>
+                    <td>@data.Email</td>
+                    <td>@data.Address.City</td>
+                    <td>@data.Address.Country</td>
                     <td>
-                        <button class="btn btn-info" @onclick="() => ViewDetails(employee.Id)">Details</button>
+                        <button class="btn btn-info" @onclick="() => ViewDetails(data.Id)">Details</button>
                         </td>
                 </tr>
             }
