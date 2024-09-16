@@ -19,8 +19,8 @@ namespace Projects.Models
                 CreatedDate = dto.CreatedDate,
                 LastUpdated = dto.LastUpdated,
                 LastUpdatedBy = dto.LastUpdatedBy,
-                CompanyId = dto.CompanyId,
-                Company = dto.Company != null ? new CompanyConverter().Convert(dto.Company) : null
+                CustomerId = dto.CustomerId,
+                Customer = dto.Customer != null ? new CustomerConverter().Convert(dto.Customer) : null
             };
         }
 
@@ -38,8 +38,8 @@ namespace Projects.Models
                 CreatedDate = model.CreatedDate,
                 LastUpdated = model.LastUpdated,
                 LastUpdatedBy = model.LastUpdatedBy,
-                CompanyId = model.CompanyId,
-                Company = model.Company != null ? new CompanyConverter().Convert(model.Company) : null
+                CustomerId = model.CustomerId,
+                Customer = model.Customer != null ? new CustomerConverter().Convert(model.Customer) : null
             };
         }
     }

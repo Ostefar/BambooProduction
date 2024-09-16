@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Shared.Dto
 {
-    public class CompanyDto
+    public class CustomerDto
     {
         public Guid Id { get; set; }
 
@@ -15,6 +15,8 @@ namespace Shared.Dto
         public string ContactPersonPhone { get; set; }
 
         public string ContactPersonEmail { get; set; }
+
+        public string LoggedInUserRole { get; set; }
 
         public DateTime CreatedDate { get; set; }
 

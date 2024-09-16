@@ -3,12 +3,12 @@ using Shared.Interfaces;
 
 namespace Projects.Models
 {
-    public class CompanyConverter : IConverter<Company, CompanyDto>
+    public class CustomerConverter : IConverter<Customer, CustomerDto>
     {
-        // Converts CompanyDto to Company model
-        public Company Convert(CompanyDto dto)
+        // Converts CustomerDto to Customer model
+        public Customer Convert(CustomerDto dto)
         {
-            return new Company
+            return new Customer
             {
                 Id = dto.Id,
                 CompanyName = dto.CompanyName,
@@ -26,10 +26,10 @@ namespace Projects.Models
             };
         }
 
-        // Converts Company model to CompanyDto
-        public CompanyDto Convert(Company model)
+        // Converts Customer model to CustomerDto
+        public CustomerDto Convert(Customer model)
         {
-            return new CompanyDto
+            return new CustomerDto
             {
                 Id = model.Id,
                 CompanyName = model.CompanyName,

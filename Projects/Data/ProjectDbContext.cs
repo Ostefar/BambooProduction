@@ -13,5 +13,9 @@ namespace Projects.Data
 
         public DbSet<Project> Projects { get; set; }
 
+        public DbSet<Customer> Customers { get; set; }
+
+        public DbSet<Address> Addresses { get; set; }
+
     }
 }

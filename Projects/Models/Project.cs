@@ -43,9 +43,9 @@ namespace Projects.Models
         [StringLength(256)]
         public string LastUpdatedBy { get; set; }
 
-        public Guid CompanyId { get; set; }
+        public Guid CustomerId { get; set; }
 
-        [ForeignKey("CompanyId")]
-        public Company Company { get; set; }
+        [ForeignKey("CustomerId")]
+        public Customer Customer { get; set; }
     }
 }

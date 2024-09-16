@@ -15,7 +15,7 @@ builder.Services.AddDbContext<ProjectDbContext>(options =>
 // Register Converters for dependency injection
 builder.Services.AddSingleton<IConverter<Project, ProjectDto>, ProjectConverter>();
 builder.Services.AddSingleton<IConverter<Address, AddressDto>, AddressConverter>();
-builder.Services.AddSingleton<IConverter<Company, CompanyDto>, CompanyConverter>();
+builder.Services.AddSingleton<IConverter<Customer, CustomerDto>, CustomerConverter>();
 
 // Configure JWT authentication
 /*builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

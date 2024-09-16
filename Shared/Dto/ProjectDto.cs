@@ -14,6 +14,10 @@ namespace Shared.Dto
 
         public int Priority { get; set; }
 
+        public int BillingType { get; set; }
+
+        public string LoggedInUserRole { get; set; }
+
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
@@ -21,8 +25,8 @@ namespace Shared.Dto
         public DateTime LastUpdated { get; set; }
         public string LastUpdatedBy { get; set; }
 
-        public Guid CompanyId { get; set; }
+        public Guid CustomerId { get; set; }
 
-        public CompanyDto Company { get; set; }
+        public CustomerDto Customer { get; set; }
     }
 }

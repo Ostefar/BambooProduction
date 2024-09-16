@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Projects.Models
 {
-    public class Company
+    public class Customer
     {
         [Key]
         public Guid Id { get; set; }
@@ -12,7 +12,7 @@ namespace Projects.Models
         [StringLength(maximumLength: 50, MinimumLength = 2)]
         public string CompanyName { get; set; }
 
-        [Required(ErrorMessage = "Company name field is required.")]
+        [Required(ErrorMessage = "Cvr field is required.")]
         [StringLength(8)]
         public string Cvr { get; set; }
 

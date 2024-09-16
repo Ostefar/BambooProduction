@@ -1,0 +1,46 @@
+﻿@page "/Projects"
+@using Microsoft.AspNetCore.Authorization
+@rendermode InteractiveServer
+
+@attribute [Authorize(Roles = "Admin, Employee")]
+
+<PageTitle>Projects</PageTitle>
+
+<div class="input-group mb-3">
+    <input type="text" class="form-control" @bind="Input.searchTerm" placeholder="Search by ..." />
+    <button class="btn btn-primary" @onclick="SearchProjects">Search</button>
+</div>
+
+<hr />
+
+@code {
+
+    private InputModel Input { get; set; } = new();
+
+    private void SearchProjects()
+    {
+       /* if (!string.IsNullOrEmpty(Input.searchTerm))
+        {
+            filteredEmployees = employees.Where(e =>
+                e.FirstName.ToLower().Contains(Input.searchTerm.ToLower()) ||
+                e.LastName.ToLower().Contains(Input.searchTerm.ToLower()) ||
+                e.Phone.ToLower().Contains(Input.searchTerm.ToLower()) ||
+                e.Email.ToLower().Contains(Input.searchTerm.ToLower()) ||
+                e.Address.City.ToLower().Contains(Input.searchTerm.ToLower()) ||
+                e.Address.Country.ToLower().Contains(Input.searchTerm.ToLower())
+            ).ToList();
+        }
+        else
+        {
+            filteredEmployees = employees;
+        }
+        */
+        StateHasChanged();
+    }
+
+    private sealed class InputModel
+    {
+        public string searchTerm { get; set; } = "";
+    }
+
+}
