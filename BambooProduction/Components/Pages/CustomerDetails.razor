@@ -1,14 +1,249 @@
-﻿@page "/Customer-details"
+﻿@page "/Customer-details/{customerId:guid}"
+@using BambooProduction.Data
+@using BambooProduction.Models.Customer
 @using BambooProduction.Service
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Shared.Dto
 @rendermode InteractiveServer
 @inject AuthService AuthService
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager Navigation
 @inject IHttpClientFactory Http
+@inject ILogger<CustomerDto> Logger
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 @attribute [Authorize(Roles = "Admin, Employee")]
 
 <h3>CustomerDetails</h3>
 
+@if (customer != null)
+{
+    <EditForm Model="Input" method="put" OnValidSubmit="UpdateCustomer" FormName="updateCustomer">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" role="alert" />
+
+        <div class="row">
+            <div class="col-md-2">
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.CompanyName" class="form-control" placeholder="Company name" />
+                    <label for="firstName">Company name</label>
+                    <ValidationMessage For="() => Input.CompanyName" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.Cvr" class="form-control" placeholder="Cvr" />
+                    <label for="lastName">Cvr</label>
+                    <ValidationMessage For="() => Input.Cvr" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.ContactPersonFirstName" class="form-control" placeholder="Contact person first name" />
+                    <label for="phone">Contact person first name</label>
+                    <ValidationMessage For="() => Input.ContactPersonFirstName" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.ContactPersonLastName" class="form-control" placeholder="Contact person last name" />
+                    <label for="email">Contact person last name</label>
+                    <ValidationMessage For="() => Input.ContactPersonLastName" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.ContactPersonEmail" class="form-control" placeholder="Contact person email" />
+                    <label for="email">Contact person email</label>
+                    <ValidationMessage For="() => Input.ContactPersonEmail" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.ContactPersonPhone" class="form-control" placeholder=" Contact person phone" />
+                    <label for="phone">Contact person phone</label>
+                    <ValidationMessage For="() => Input.ContactPersonPhone" class="text-danger" />
+                </div>
+
+        
+            </div>
+
+            <div class="col-md-2">
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.AddressLine" class="form-control" placeholder="Address" />
+                    <label for="addressLine">Address</label>
+                    <ValidationMessage For="() => Input.AddressLine" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.City" class="form-control" placeholder="City" />
+                    <label for="city">City</label>
+                    <ValidationMessage For="() => Input.City" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.ZipCode" class="form-control" placeholder="Zip code" />
+                    <label for="zipCode">Zip code</label>
+                    <ValidationMessage For="() => Input.ZipCode" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.Country" class="form-control" placeholder="Country" />
+                    <label for="country">Country</label>
+                    <ValidationMessage For="() => Input.Country" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputDate @bind-Value="Input.CreatedDate" class="form-control" placeholder="Creation date" min="1900-01-01" max="2100-12-31" disabled />
+                    <label for="createdDate">Creation date</label>
+                    <ValidationMessage For="() => Input.CreatedDate" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputDate @bind-Value="Input.LastUpdated" class="form-control" placeholder="Last updated" min="1900-01-01" max="2100-12-31" disabled />
+                    <label for="lastUpdated">Last updated</label>
+                    <ValidationMessage For="() => Input.LastUpdated" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.LastUpdatedBy" class="form-control" placeholder="Last updated by" disabled />
+                    <label for="lastUpdatedBy">Last updated by</label>
+                    <ValidationMessage For="() => Input.LastUpdatedBy" class="text-danger" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <button type="submit" class="w-100 btn btn-lg btn-warning">Update</button>
+                <br>
+                <button type="button" class="w-100 btn btn-lg btn-danger" @onclick="() => DeleteCustomer()">Delete</button>
+                <br>
+                <button type="button" class="w-100 btn btn-lg btn-info">Economy</button>
+            </div>
+        </div>
+    </EditForm>
+}
+
 @code {
+
+    [Parameter] public Guid customerId { get; set; }
+    [SupplyParameterFromForm]
+    private UpdateModel Input { get; set; } = new();
+    private CustomerDto customer;
+    private HttpClient ProjectApiClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProjectApiClient = Http.CreateClient("ProjectApi");
+        await LoadCustomerDetails();
+    }
+
+    private async Task LoadCustomerDetails()
+    {
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
+        {
+            var requestUrl = $"Customer/{customerId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            customer = await ProjectApiClient.GetFromJsonAsync<CustomerDto>(requestUrl);
+
+            // Copy data from customer to Input
+            if (customer != null)
+            {
+                Input.CompanyName = customer.CompanyName;
+                Input.Cvr = customer.Cvr;
+                Input.ContactPersonFirstName = customer.ContactPersonFirstName;
+                Input.ContactPersonLastName = customer.ContactPersonLastName;
+                Input.ContactPersonEmail = customer.ContactPersonEmail;
+                Input.ContactPersonPhone = customer.ContactPersonPhone;
+                Input.CreatedDate = customer.CreatedDate;
+                Input.LastUpdated = customer.LastUpdated;
+                Input.LastUpdatedBy = customer.LastUpdatedBy;
+                Input.AddressLine = customer.Address.AddressLine;
+                Input.City = customer.Address.City;
+                Input.ZipCode = customer.Address.ZipCode;
+                Input.Country = customer.Address.Country;
+            }
+        }
+    }
+
+    private async Task UpdateCustomer()
+    {
+        var userEmail = "";
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var identityUser = await UserManager.GetUserAsync(user);
+        if (identityUser != null)
+        {
+            userEmail = await UserManager.GetEmailAsync(identityUser);
+        }
+
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+        if (loggedInUserRole == "Admin")
+        {
+            var customerUpdated = new CustomerDto
+                {
+                    CompanyName = Input.CompanyName,
+                    Cvr = Input.Cvr,
+                    ContactPersonFirstName = Input.ContactPersonFirstName,
+                    ContactPersonLastName = Input.ContactPersonLastName,
+                    ContactPersonEmail = Input.ContactPersonEmail,
+                    ContactPersonPhone = Input.ContactPersonPhone,
+                    LoggedInUserRole = loggedInUserRole,
+                    CreatedDate = DateTime.Now,
+                    LastUpdated = DateTime.Now,
+                    LastUpdatedBy = userEmail,
+                    Address = new AddressDto
+                    {
+                        AddressLine = Input.AddressLine,
+                        City = Input.City,
+                        ZipCode = Input.ZipCode,
+                        Country = Input.Country,
+                        LastUpdated = DateTime.Now,
+                        LastUpdatedBy = userEmail,
+                    }
+                };
+            var requestUrl = $"Customer/{customerId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            try
+            {
+                var response = await ProjectApiClient.PutAsJsonAsync(requestUrl, customerUpdated);
+                if (response.IsSuccessStatusCode)
+                {
+                    Navigation.NavigateTo("/customers");
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task DeleteCustomer()
+    {
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+
+        if (loggedInUserRole == "Admin")
+        {
+            // Delete customer from api
+            var requestUrl = $"Customer/{customerId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            var response = await ProjectApiClient.DeleteAsync(requestUrl);
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/customers");
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
+
+            }
+        }
+        else
+        {
+            Console.WriteLine("Unauthorized: Admin role required.");
+        }
+    }
 
 }
