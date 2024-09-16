@@ -9,8 +9,8 @@ namespace Shared.Service
     public class EncryptionHelper
     {
         // opbevar dem i docker i .env fil
-        private static readonly byte[] Key = Encoding.UTF8.GetBytes("YourEncryptionKey");
-        private static readonly byte[] IV = Encoding.UTF8.GetBytes("YourInitializationVector");
+        private static readonly byte[] Key = Encoding.UTF8.GetBytes("MyEncryptionKey");
+        private static readonly byte[] IV = Encoding.UTF8.GetBytes("MyInitializationVector");
 
         public static string EncryptString(string plainText)
         {

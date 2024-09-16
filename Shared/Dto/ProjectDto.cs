@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Shared.Enums;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,9 +13,9 @@ namespace Shared.Dto
 
         public string ProjectDescription { get; set; }
 
-        public int Priority { get; set; }
+        public PriorityEnum Priority { get; set; }
 
-        public int BillingType { get; set; }
+        public BillingTypeEnum BillingType { get; set; }
 
         public string LoggedInUserRole { get; set; }
 
@@ -26,7 +27,13 @@ namespace Shared.Dto
         public string LastUpdatedBy { get; set; }
 
         public Guid CustomerId { get; set; }
+        
+        public string CopmpanyName { get; set; }
 
-        public CustomerDto Customer { get; set; }
+        public Guid EmployeeId { get; set; }
+
+        public string EmployeeFullName { get; set; }
+
+
     }
 }

@@ -1,13 +1,191 @@
 ﻿@page "/Create-project"
+@using BambooProduction.Data
+@using BambooProduction.Models.Project
 @using BambooProduction.Service
+@using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Authorization
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Shared.Dto
+@using Shared.Enums
 @rendermode InteractiveServer
 @inject AuthService AuthService
+@inject UserManager<ApplicationUser> UserManager
+@inject IAuthenticationService AuthenticationService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory Http
+@inject ILogger<CustomerDto> Logger
 
 @attribute [Authorize(Roles = "Admin, Employee")]
-<h3>CreateProject</h3>
+
+<div class="row">
+    <div class="col-md-4">
+        <EditForm Model="Input" OnValidSubmit="RegisterProject">
+            <DataAnnotationsValidator />
+            <h2>Create a new project</h2>
+            <hr />
+            <ValidationSummary class="text-danger" role="alert" />
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.ProjectName" class="form-control" placeholder="project Name" />
+                <label for="projectName">Project name</label>
+                <ValidationMessage For="() => Input.ProjectName" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.ProjectDescription" class="form-control" placeholder="Project Description" />
+                <label for="projectDescription">Project description</label>
+                <ValidationMessage For="() => Input.ProjectDescription" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <select @bind="selectedCustomerId" class="form-control">
+                    <option value="">Select a customer</option>
+                    @foreach (var customer in customers)
+                    {
+                        <option value="@customer.Id">@customer.CompanyName</option>
+                    }
+                </select>
+                <label for="customerId">Customer</label>
+                <ValidationMessage For="() => selectedCustomerId" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <select @bind="selectedEmployeeId" class="form-control">
+                    <option value="">Select a employee</option>
+                    @foreach (var employee in employees)
+                    {
+                        <option value="@employee.Id">@employee.FirstName @employee.LastName</option>
+                    }
+                </select>
+                <label for="customerId">Assigned employee</label>
+                <ValidationMessage For="() => selectedEmployeeId" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputSelect @bind-Value="Input.Priority" class="form-control">
+                    @foreach (var priority in Enum.GetValues(typeof(PriorityEnum)))
+                    {
+                        <option value="@(priority)">@priority</option>
+                    }
+                </InputSelect>
+                <label for="priority">Priority</label>
+                <ValidationMessage For="() => Input.Priority" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputSelect @bind-Value="Input.BillingType" class="form-control">
+                    @foreach (var billingType in Enum.GetValues(typeof(BillingTypeEnum)))
+                    {
+                        <option value="@(billingType)">@billingType</option>
+                    }
+                </InputSelect>
+                <label for="billingType">Billing type</label>
+                <ValidationMessage For="() => Input.BillingType" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputDate @bind-Value="Input.StartDate" class="form-control" placeholder="Hiring Date" min="1900-01-01" max="2100-12-31" />
+                <label for="startDate">Start Date</label>
+                <ValidationMessage For="() => Input.StartDate" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputDate @bind-Value="Input.EndDate" class="form-control" placeholder="Hiring Date" min="1900-01-01" max="2100-12-31" />
+                <label for="endDate">End Date</label>
+                <ValidationMessage For="() => Input.EndDate" class="text-danger" />
+            </div>
+
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+        </EditForm>
+    </div>
+</div>
 
 @code {
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
 
+    private HttpClient ProjectApiClient;
+
+    private HttpClient EmployeeApiClient;
+
+    private List<CustomerDto> customers = new();
+
+    private List<EmployeeDto> employees = new();
+
+    private Guid selectedCustomerId;
+
+    private Guid selectedEmployeeId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProjectApiClient = Http.CreateClient("ProjectApi");
+        EmployeeApiClient = Http.CreateClient("EmployeeApi");
+        await LoadCustomers();
+        await LoadEmployees();
+    }
+
+    private async Task LoadCustomers()
+    {
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
+        {
+            var requestUrl = $"Customer?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            customers = await ProjectApiClient.GetFromJsonAsync<List<CustomerDto>>(requestUrl);
+        }
+    }
+
+    private async Task LoadEmployees()
+    {
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
+        {
+            var requestUrl = $"Employee?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            employees = await EmployeeApiClient.GetFromJsonAsync<List<EmployeeDto>>(requestUrl);
+        }
+    }
+    
+
+    public async Task RegisterProject()
+    {
+
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+
+        var userEmail = "";
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var loggedInUser = authState.User;
+        var identityUser = await UserManager.GetUserAsync(loggedInUser);
+        if (identityUser != null)
+        {
+            userEmail = await UserManager.GetEmailAsync(identityUser);
+        }
+
+        // Create project
+        var project = new ProjectDto
+        {
+            ProjectName = Input.ProjectName,
+            ProjectDescription = Input.ProjectDescription,
+            CustomerId = selectedCustomerId,
+            EmployeeId = selectedEmployeeId,
+            StartDate = Input.StartDate,
+            EndDate = Input.EndDate,
+            LoggedInUserRole = loggedInUserRole,
+            Priority = Input.Priority,
+            BillingType = Input.BillingType,
+            CreatedDate = DateTime.Now,
+            LastUpdated = DateTime.Now,
+            LastUpdatedBy = userEmail, 
+        };
+
+        var projectResponse = await ProjectApiClient.PostAsJsonAsync("Project", project);
+
+        if (!projectResponse.IsSuccessStatusCode)
+        {
+            Logger.LogError("Failed to create project.");
+            return;
+        }
+        Navigation.NavigateTo("/projects");
+    }
 }

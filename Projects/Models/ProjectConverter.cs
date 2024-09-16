@@ -14,13 +14,14 @@ namespace Projects.Models
                 ProjectName = dto.ProjectName,
                 ProjectDescription = dto.ProjectDescription,
                 Priority = dto.Priority,
+                BillingType = dto.BillingType,
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
                 CreatedDate = dto.CreatedDate,
                 LastUpdated = dto.LastUpdated,
                 LastUpdatedBy = dto.LastUpdatedBy,
                 CustomerId = dto.CustomerId,
-                Customer = dto.Customer != null ? new CustomerConverter().Convert(dto.Customer) : null
+                EmployeeId = dto.EmployeeId,
             };
         }
 
@@ -33,13 +34,14 @@ namespace Projects.Models
                 ProjectName = model.ProjectName,
                 ProjectDescription = model.ProjectDescription,
                 Priority = model.Priority,
+                BillingType = model.BillingType,
                 StartDate = model.StartDate,
                 EndDate = model.EndDate,
                 CreatedDate = model.CreatedDate,
                 LastUpdated = model.LastUpdated,
                 LastUpdatedBy = model.LastUpdatedBy,
                 CustomerId = model.CustomerId,
-                Customer = model.Customer != null ? new CustomerConverter().Convert(model.Customer) : null
+                EmployeeId= model.EmployeeId,
             };
         }
     }

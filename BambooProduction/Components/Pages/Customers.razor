@@ -10,7 +10,7 @@
 @attribute [Authorize(Roles = "Admin, Employee")]
 
 <div class="input-group mb-3">
-    <input type="text" class="form-control" @bind="Input.searchTerm" placeholder="Search by ..." />
+    <input type="text" class="form-control" @bind="Input.searchTerm" placeholder="Search by company name, contact person name, phone, email, city or country" />
     <button class="btn btn-primary" @onclick="SearchCustomers">Search</button>
     <button class="btn btn-success ms-2" @onclick="CreateCustomer">+</button>
 </div>

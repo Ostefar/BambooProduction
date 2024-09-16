@@ -41,25 +41,11 @@ namespace Projects.Controllers
                     BillingType = p.BillingType,
                     StartDate = p.StartDate,
                     EndDate = p.EndDate,
+                    CustomerId = p.CustomerId,
+                    EmployeeId = p.EmployeeId,
                     CreatedDate = p.CreatedDate,
                     LastUpdated = p.LastUpdated,
                     LastUpdatedBy = p.LastUpdatedBy,
-                    Customer = new CustomerDto
-                    {
-                        Id = p.Customer.Id,
-                        CompanyName = p.Customer.CompanyName,
-                        ContactPersonFirstName = p.Customer.ContactPersonFirstName,
-                        ContactPersonLastName = p.Customer.ContactPersonLastName,
-                        ContactPersonPhone = p.Customer.ContactPersonPhone,
-                        ContactPersonEmail = p.Customer.ContactPersonEmail,
-                        Address = new AddressDto
-                        {
-                            AddressLine = p.Customer.Address.AddressLine,
-                            City = p.Customer.Address.City,
-                            ZipCode = p.Customer.Address.ZipCode,
-                            Country = p.Customer.Address.Country,
-                        }
-                    }
                 })
                 .ToListAsync();
 
@@ -86,25 +72,12 @@ namespace Projects.Controllers
                     BillingType = p.BillingType,
                     StartDate = p.StartDate,
                     EndDate = p.EndDate,
+                    CustomerId = p.CustomerId,
+                    EmployeeId = p.EmployeeId,
                     CreatedDate = p.CreatedDate,
                     LastUpdated = p.LastUpdated,
-                    LastUpdatedBy = p.LastUpdatedBy,
-                    Customer = new CustomerDto
-                    {
-                        Id = p.Customer.Id,
-                        CompanyName = p.Customer.CompanyName,
-                        ContactPersonFirstName = p.Customer.ContactPersonFirstName,
-                        ContactPersonLastName = p.Customer.ContactPersonLastName,
-                        ContactPersonPhone = p.Customer.ContactPersonPhone,
-                        ContactPersonEmail = p.Customer.ContactPersonEmail,
-                        Address = new AddressDto
-                        {
-                            AddressLine = p.Customer.Address.AddressLine,
-                            City = p.Customer.Address.City,
-                            ZipCode = p.Customer.Address.ZipCode,
-                            Country = p.Customer.Address.Country,
-                        }
-                    }
+                    LastUpdatedBy = p.LastUpdatedBy
+                    
                 })
                 .FirstOrDefaultAsync();
 
@@ -132,7 +105,6 @@ namespace Projects.Controllers
 
             project.Id = Guid.NewGuid();
 
-            // Convert DTO to Project entity
             var convertedProject = projectConverter.Convert(project);
 
             _context.Projects.Add(convertedProject);
@@ -150,9 +122,7 @@ namespace Projects.Controllers
                 return Unauthorized("You are not allowed to update this project.");
             }
 
-            var existingProject = await _context.Projects
-                .Include(p => p.Customer)
-                .FirstOrDefaultAsync(p => p.Id == id);
+            var existingProject = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
 
             if (existingProject == null)
             {
@@ -197,9 +167,7 @@ namespace Projects.Controllers
                 return Unauthorized("You are not allowed to delete this project.");
             }
 
-            var project = await _context.Projects
-                .Include(p => p.Customer)
-                .FirstOrDefaultAsync(p => p.Id == id);
+            var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
 
             if (project == null)
             {

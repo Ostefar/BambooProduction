@@ -15,7 +15,7 @@
 
 @attribute [Authorize(Roles = "Admin, Employee")]
 
-<h3>CustomerDetails</h3>
+<h3>Customer details</h3>
 
 @if (customer != null)
 {
@@ -139,6 +139,7 @@
         var loggedInUserRole = await AuthService.GetUserRoleAsync();
         if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
         {
+
             var requestUrl = $"Customer/{customerId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
             customer = await ProjectApiClient.GetFromJsonAsync<CustomerDto>(requestUrl);
 

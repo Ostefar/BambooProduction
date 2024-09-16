@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Shared.Enums;
 
 namespace Projects.Models
 {
@@ -17,12 +18,10 @@ namespace Projects.Models
         public string ProjectDescription { get; set; }
 
         [Required(ErrorMessage = "Priority is required.")]
-        [Range(1, 3, ErrorMessage = "Priority must be between 1 and 3.")]
-        public int Priority { get; set; }
+        public PriorityEnum Priority { get; set; }  
 
         [Required(ErrorMessage = "Billing type is required.")]
-        [Range(1, 2, ErrorMessage = "Billing type must be between 1 and 2.")]
-        public int BillingType { get; set; }
+        public BillingTypeEnum BillingType { get; set; }
 
         [Required(ErrorMessage = "Start date field is required.")]
         [DataType(DataType.Date)]
@@ -43,9 +42,10 @@ namespace Projects.Models
         [StringLength(256)]
         public string LastUpdatedBy { get; set; }
 
+        [Required]
         public Guid CustomerId { get; set; }
 
-        [ForeignKey("CustomerId")]
-        public Customer Customer { get; set; }
+        [Required]
+        public Guid EmployeeId { get; set; }
     }
 }
