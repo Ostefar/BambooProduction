@@ -14,6 +14,7 @@
 <div class="input-group mb-3">
     <input type="text" class="form-control" @bind="Input.searchTerm" placeholder="Search by name, phone, email, city, or country" />
     <button class="btn btn-primary" @onclick="SearchEmployees">Search</button>
+    <button class="btn btn-success ms-2" @onclick="CreateEmployee">+</button>
 </div>
 
 <hr />
@@ -104,6 +105,11 @@
     private void ViewDetails(Guid employeeId)
     {
         Navigation.NavigateTo($"/employee-details/{employeeId}");
+    }
+
+    private void CreateEmployee()
+    {
+        Navigation.NavigateTo($"/Account/Register");
     }
 
     private sealed class InputModel

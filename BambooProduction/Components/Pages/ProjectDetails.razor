@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Shared.Dto
+@using Shared.Enums
 @rendermode InteractiveServer
 @inject AuthService AuthService
 @inject AuthService AuthService
@@ -76,6 +77,28 @@
                 </div>
             </div>
             <div class="col-md-2">
+
+                <div class="form-floating mb-3">
+                    <InputSelect @bind-Value="Input.Priority" class="form-control">
+                        @foreach (var priority in Enum.GetValues(typeof(PriorityEnum)))
+                        {
+                            <option value="@(priority)">@priority</option>
+                        }
+                    </InputSelect>
+                    <label for="priority">Priority</label>
+                    <ValidationMessage For="() => Input.Priority" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputSelect @bind-Value="Input.BillingType" class="form-control">
+                        @foreach (var billingType in Enum.GetValues(typeof(BillingTypeEnum)))
+                        {
+                            <option value="@(billingType)">@billingType</option>
+                        }
+                    </InputSelect>
+                    <label for="billingType">Billing type</label>
+                    <ValidationMessage For="() => Input.BillingType" class="text-danger" />
+                </div>
 
                 <div class="form-floating mb-3">
                     <InputDate @bind-Value="Input.CreatedDate" class="form-control" placeholder="Creation date" min="1900-01-01" max="2100-12-31" disabled />
