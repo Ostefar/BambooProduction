@@ -21,6 +21,6 @@ namespace Economy.Models
         [Required]
         public Guid EmployeeEcoId { get; set; }
 
-        public EmployeeEcoDto EmployeeEco { get; set; }
+        public EmployeeEco EmployeeEco { get; set; }
     }
 }

@@ -23,6 +23,6 @@ namespace Economy.Models
         [Required]
         public Guid ProjectEcoId { get; set; }
 
-        public ProjectEcoDto ProjectEco { get; set; }
+        public ProjectEco ProjectEco { get; set; }
     }
 }
