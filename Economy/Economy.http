@@ -1,0 +1,6 @@
+@Economy_HostAddress = http://localhost:5012
+
+GET {{Economy_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

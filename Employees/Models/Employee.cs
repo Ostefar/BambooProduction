@@ -31,7 +31,7 @@ namespace Employees.Models
         public int JobTitle { get; set; }
 
         [Required]
-        [StringLength(36)] // 32 hvis det uden -
+        [StringLength(36)] 
         public string UserId { get; set; }
 
         [Required(ErrorMessage = "Birth date field is required.")]

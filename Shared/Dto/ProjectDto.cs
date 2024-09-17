@@ -27,13 +27,7 @@ namespace Shared.Dto
         public string LastUpdatedBy { get; set; }
 
         public Guid CustomerId { get; set; }
-        
-        public string CopmpanyName { get; set; }
 
         public Guid EmployeeId { get; set; }
-
-        public string EmployeeFullName { get; set; }
-
-
     }
 }
