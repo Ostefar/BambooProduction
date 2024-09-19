@@ -2,6 +2,8 @@
 using Economy.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Shared.Dto;
+using System.Linq;
 
 namespace Economy.Controllers
 {
@@ -10,20 +12,42 @@ namespace Economy.Controllers
     public class EmployeeEcoController : ControllerBase
     {
         private readonly EconomyDbContext _context;
+        private HttpClient _employeeApiClient;
 
-        public EmployeeEcoController(EconomyDbContext context)
+        public EmployeeEcoController(EconomyDbContext context, IHttpClientFactory httpClientFactory)
         {
             _context = context;
+            _employeeApiClient = httpClientFactory.CreateClient("EmployeeApi");
         }
 
         // GET: api/EmployeeEco
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<EmployeeEco>>> GetEmployeeEcos()
+        public async Task<ActionResult<IEnumerable<EmployeeEcoDto>>> GetEmployeeEcos()
         {
-            return await _context.EmployeeEcos
-                .Include(e => e.SickLeaves)
-                .Include(e => e.VacationDays)
-                .ToListAsync();
+            // Call the GetEmployeeNames API endpoint
+            HttpResponseMessage response = await _employeeApiClient.GetAsync("Employee/names");
+            var employeeNames = await response.Content.ReadFromJsonAsync<List<EmployeeDto>>();
+
+            if (employeeNames is not null)
+            {
+                var employeeNameDictionary = employeeNames.ToDictionary(e => e.Id, e => e.FullName);
+
+                var employeeEcos = await _context.EmployeeEcos
+                    .Select(e => new EmployeeEcoDto
+                    {
+                        Id = e.Id,
+                        FullName = employeeNameDictionary.ContainsKey(e.EmployeeId) ? employeeNameDictionary[e.EmployeeId] : "Unknown Employee",
+                        HourlyWage = e.HourlyWage,
+                        SickDaysTotal = e.SickDaysTotal,
+                        VacationDaysTotal = e.VacationDaysTotal
+                    }).ToListAsync();
+
+                return Ok(employeeEcos);
+            }
+            else
+            {
+                return BadRequest("No employees was found.");
+            }
         }
 
         // GET: api/EmployeeEco/{id}

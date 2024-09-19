@@ -1,13 +1,201 @@
 ﻿@page "/Economy"
+@using BambooProduction.Models.Search
 @using BambooProduction.Service
 @using Microsoft.AspNetCore.Authorization
+@using Shared.Dto
 @rendermode InteractiveServer
 @inject AuthService AuthService
 @inject IHttpClientFactory Http
+@inject NavigationManager Navigation
 @attribute [Authorize(Roles = "Admin, Employee")]
+ <div class="row">
+    <div class="col-md-6"
+    >
+    <h2>Project</h2>
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" @bind="Input.searchTerm" placeholder="Search by project name" />
+            <button class="btn btn-primary" @onclick="() => Search(1)">Search</button>
+            <button class="btn btn-success ms-2" @onclick="() => Create(1)">+</button>
+    </div>
 
-<h3>Economy</h3>
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Project name</th>
+                    <th>Total cost</th>
+                    <th>Hours used</th>
+                    <th>Material expenses</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (filteredProjectEcos != null && filteredProjectEcos.Any())
+                {
+                    @foreach (var data in filteredProjectEcos)
+                    {
+                        <tr>
+                            <td>@data.ProjectName</td>
+                            <td>@data.TotalCost</td>
+                            <td>@data.HoursTotal</td>
+                            <td>@data.MaterialsPriceTotal</td>
+                            <td>
+                                <button class="btn btn-info" @onclick="() => ViewDetails(1, data.Id)">Details</button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6">No project economy found.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+
+    <div class="col-md-6">
+        <h2>Employee</h2>
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" @bind="Input.searchTerm" placeholder="Search by employee name" />
+            <button class="btn btn-primary" @onclick="() => Search(2)">Search</button>
+            <button class="btn btn-success ms-2" @onclick="() => Create(2)">+</button>
+        </div>
+
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Hourly wage</th>
+                    <th>Sickdays</th>
+                    <th>Vacation days</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (filteredEmployeeEcos != null && filteredEmployeeEcos.Any())
+                {
+                    @foreach (var data in filteredEmployeeEcos)
+                    {
+                        <tr>
+                            <td>@data.FullName</td>
+                            <td>@data.HourlyWage</td>
+                            <td>@data.SickDaysTotal</td>
+                            <td>@data.VacationDaysTotal</td>
+                            <td>
+                                <button class="btn btn-info" @onclick="() => ViewDetails(2, data.Id)">Details</button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6">No employee economy found.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 
 @code {
+    private List<ProjectEcoDto> projectEcos = new();
+    private List<ProjectEcoDto> filteredProjectEcos = new();
+    private InputModel Input { get; set; } = new();
 
+    private List<EmployeeEcoDto> employeeEcos = new();
+    private List<EmployeeEcoDto> filteredEmployeeEcos = new();
+    private HttpClient EmployeeApiClient;
+    private HttpClient ProjectApiClient;
+    private HttpClient EconomyApiClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProjectApiClient = Http.CreateClient("ProjectApi");
+        EmployeeApiClient = Http.CreateClient("EmployeeApi");
+        EconomyApiClient = Http.CreateClient("EconomyApi");
+        await LoadProjectEco();
+        await LoadEmployeeEco();
+    }
+    private async Task LoadProjectEco()
+    {
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
+        {
+            var requestUrl = $"ProjectEco?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            projectEcos = await EconomyApiClient.GetFromJsonAsync<List<ProjectEcoDto>>(requestUrl);
+            filteredProjectEcos = projectEcos;
+        }
+    }
+
+    private async Task LoadEmployeeEco()
+    {
+        var loggedInUserRole = await AuthService.GetUserRoleAsync();
+        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
+        {
+            var requestUrl = $"EmployeeEco?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            employeeEcos = await EconomyApiClient.GetFromJsonAsync<List<EmployeeEcoDto>>(requestUrl);
+            filteredEmployeeEcos = employeeEcos;
+        }
+    }
+
+    private void Search(int i)
+    {
+        if (i == 1)
+        {
+            if (!string.IsNullOrEmpty(Input.searchTerm))
+            {
+                filteredProjectEcos = projectEcos.Where(e =>
+                     e.ProjectName.ToLower().Contains(Input.searchTerm.ToLower())  
+                 ).ToList();
+            }
+            else
+            {
+                filteredProjectEcos = projectEcos;
+            }
+
+            StateHasChanged();
+        }
+        else if (i == 2)
+        {
+            if (!string.IsNullOrEmpty(Input.searchTerm))
+            {
+                filteredEmployeeEcos = employeeEcos.Where(e =>
+                     e.FullName.ToLower().Contains(Input.searchTerm.ToLower()) 
+                 ).ToList();
+            }
+            else
+            {
+                filteredEmployeeEcos = employeeEcos;
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    private void ViewDetails(int i, Guid Id)
+    {
+        if (i == 1)
+        {
+            Navigation.NavigateTo($"/Economy-project-details"); 
+        }
+        else if (i == 2)
+        {
+            Navigation.NavigateTo($"/Economy-employee-details"); 
+        }
+    }
+
+    private void Create(int i)
+    {
+        if (i == 1)
+        {
+            Navigation.NavigateTo($"/Create-economy-project");
+        }
+        else if (i == 2)
+        {
+            Navigation.NavigateTo($"/create-economy-employee"); 
+        }
+    }
 }

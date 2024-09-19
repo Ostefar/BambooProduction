@@ -10,6 +10,8 @@ namespace Shared.Dto
 
         public Guid EmployeeId { get; set; }
 
+        public String FullName { get; set; }
+
         public string HourlyWage { get; set; }
 
         public int SickDaysTotal { get; set; }

@@ -2,6 +2,9 @@
 using Economy.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Shared.Dto;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace Economy.Controllers
 {
@@ -10,21 +13,51 @@ namespace Economy.Controllers
     public class ProjectEcoController : ControllerBase
     {
         private readonly EconomyDbContext _context;
+        private HttpClient _projectApiClient;
+        private string loggedInUserRole = "Admin";
 
-        public ProjectEcoController(EconomyDbContext context)
+        public ProjectEcoController(EconomyDbContext context, IHttpClientFactory httpClientFactory)
         {
             _context = context;
+            _projectApiClient = httpClientFactory.CreateClient("ProjectApi");
         }
 
         // GET: api/ProjectEco
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProjectEco>>> GetProjectEcos()
+        public async Task<ActionResult<IEnumerable<ProjectEcoDto>>> GetProjectEcos([FromQuery] string loggedInUserRole)
         {
-            return await _context.ProjectEcos
-                .Include(p => p.Hours)
-                .Include(p => p.Material)
-                .ToListAsync();
+
+            if (loggedInUserRole != "Admin")
+            {
+                return Unauthorized("You are not allowed to access this resource.");
+            }   
+
+            // Call the GetProjectNames API endpoint
+            HttpResponseMessage response = await _projectApiClient.GetAsync("Project/names");
+            var projectNames = await response.Content.ReadFromJsonAsync<List<ProjectDto>>();
+
+            if (projectNames is not null)
+            {
+                var projectNameDictionary = projectNames.ToDictionary(p => p.Id, p => p.ProjectName);
+
+                var projectEcos = await _context.ProjectEcos
+                    .Select(p => new ProjectEcoDto
+                    {
+                        Id = p.Id,
+                        ProjectName = projectNameDictionary.ContainsKey(p.ProjectId) ? projectNameDictionary[p.ProjectId] : "Unknown Project",
+                        TotalCost = p.TotalCost,
+                        HoursTotal = p.HoursTotal,
+                        MaterialsPriceTotal = p.MaterialsPriceTotal
+                    }).ToListAsync();
+
+                return Ok(projectEcos);
+            }
+            else
+            {
+                return BadRequest("No projects was found.");
+            }
         }
+
 
         // GET: api/ProjectEco/{id}
         [HttpGet("{id}")]

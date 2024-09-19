@@ -1,4 +1,5 @@
 ﻿@page "/Customers"
+@using BambooProduction.Models.Search
 @using BambooProduction.Service
 @using Microsoft.AspNetCore.Authorization
 @using Shared.Dto
@@ -111,10 +112,5 @@
     private void CreateCustomer()
     {
         Navigation.NavigateTo($"/create-customer");
-    }
-
-    private sealed class InputModel
-    {
-        public string searchTerm { get; set; } = "";
     }
 }

@@ -19,6 +19,16 @@ builder.Services.AddSingleton<IConverter<EmployeeEco, EmployeeEcoDto>, EmployeeE
 builder.Services.AddSingleton<IConverter<Vacation, VacationDto>, VacationConverter>();
 builder.Services.AddSingleton<IConverter<SickLeave, SickLeaveDto>, SickLeaveConverter>();
 
+builder.Services.AddHttpClient("ProjectApi", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7286/api/"); // skal ændres til docker url
+});
+
+builder.Services.AddHttpClient("EmployeeApi", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7056/api/"); // skal ændres til docker url
+});
+
 // Configure JWT authentication
 /*builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

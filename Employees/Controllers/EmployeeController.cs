@@ -63,6 +63,20 @@ namespace Employees.Controllers
                 return Unauthorized("You are not allowed to do this");
             }
         }
+        // GET: api/Employee/names
+        [HttpGet("names")]
+        public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetEmployeeNames()
+        {
+            var employeeNames = await _context.Employees
+                .Select(p => new EmployeeDto
+                {
+                    Id = p.Id,
+                    FullName = p.FirstName + " " + p.LastName,
+                })
+                .ToListAsync();
+
+            return Ok(employeeNames);
+        }
 
 
         // GET: api/Employee/5

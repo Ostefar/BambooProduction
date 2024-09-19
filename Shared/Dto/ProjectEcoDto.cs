@@ -10,6 +10,8 @@ namespace Shared.Dto
 
         public Guid ProjectId { get; set; }
 
+        public String ProjectName { get; set; }
+
         public int TotalCost { get; set; }
 
         public int FixedPrice { get; set; }

@@ -1,4 +1,5 @@
 ﻿@page "/Projects"
+@using BambooProduction.Models.Search
 @using BambooProduction.Service
 @using Microsoft.AspNetCore.Authorization
 @using Shared.Dto
@@ -143,10 +144,5 @@
     private void CreateProject()
     {
         Navigation.NavigateTo($"/create-project");
-    }
-
-    private sealed class InputModel
-    {
-        public string searchTerm { get; set; } = "";
     }
 }

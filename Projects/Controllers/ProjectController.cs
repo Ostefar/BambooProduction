@@ -52,6 +52,21 @@ namespace Projects.Controllers
             return Ok(projects);
         }
 
+        // GET: api/Project/names
+        [HttpGet("names")]
+        public async Task<ActionResult<IEnumerable<ProjectDto>>> GetProjectNames()
+        {
+            var projectNames = await _context.Projects
+                .Select(p => new ProjectDto
+                {
+                    Id = p.Id,
+                    ProjectName = p.ProjectName,
+                })
+                .ToListAsync();
+
+            return Ok(projectNames);
+        }
+
         // GET: api/Project/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ProjectDto>> GetProject(Guid id, [FromQuery] string loggedInUserRole)

@@ -3,6 +3,7 @@
 @inject NavigationManager Navigation
 @inject AuthService AuthService
 @inject IHttpClientFactory Http
+@using BambooProduction.Models.Search
 @using BambooProduction.Service
 @using Microsoft.AspNetCore.Authorization
 @using Shared.Dto;
@@ -110,10 +111,5 @@
     private void CreateEmployee()
     {
         Navigation.NavigateTo($"/Account/Register");
-    }
-
-    private sealed class InputModel
-    {
-        public string searchTerm { get; set; } = "";
     }
 }

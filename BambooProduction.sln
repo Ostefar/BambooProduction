@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "Shared\Shared.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Projects", "Projects\Projects.csproj", "{59D11E95-38C2-4213-AF75-9511AE45D46E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Economy", "Economy\Economy.csproj", "{2607CD85-3785-4473-8BF5-BB5F541FB335}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Economy", "Economy\Economy.csproj", "{2607CD85-3785-4473-8BF5-BB5F541FB335}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
