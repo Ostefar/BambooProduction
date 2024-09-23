@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,7 @@ builder.Services.AddHttpClient("EconomyApi", client =>
     client.BaseAddress = new Uri("https://localhost:7225/api/"); // skal ændres til docker url
 });
 
+builder.Services.AddMudServices();
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(options =>
     {

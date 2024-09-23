@@ -7,8 +7,10 @@
 @using BambooProduction.Service
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
+@using MudBlazor
 @using Shared.Dto
 @using System.ComponentModel.DataAnnotations
+@inject ISnackbar Snackbar
 @inject IHttpClientFactory Http
 @inject NavigationManager Navigation
 @inject AuthService AuthService
@@ -125,6 +127,13 @@
                 <button type="button" class="w-100 btn btn-lg btn-danger" @onclick="() => DeleteEmployee(employee.UserId)">Delete</button>
             </div>
         </div>
+
+        <div class="row">
+            <div class="col-md-2">
+                <MudSnackbarProvider />
+            </div>
+        </div>
+
     </EditForm>
 
 }
@@ -140,11 +149,13 @@ else
     private EmployeeDto employee;
     private HttpClient EmployeeApiClient;
     private HttpClient EconomyApiClient;
+    private HttpClient ProjectApiClient;
 
     protected override async Task OnInitializedAsync()
     {
         EmployeeApiClient = Http.CreateClient("EmployeeApi");
         EconomyApiClient = Http.CreateClient("EconomyApi");
+        ProjectApiClient = Http.CreateClient("ProjectApi");
         await LoadEmployeeDetails();
     }
 
@@ -228,42 +239,66 @@ else
 
     private async Task DeleteEmployee(String userId)
     {
-        // Fetch the identity user using the userId
-        var identityUser = await UserManager.FindByIdAsync(userId.ToString());
-        if (identityUser != null)
-        {
-            // Delete the identity user
-            var deleteUserResult = await UserManager.DeleteAsync(identityUser);
-            if (!deleteUserResult.Succeeded)
-            {
-                var errors = string.Join(", ", deleteUserResult.Errors.Select(e => e.Description));
-                Console.WriteLine($"Error deleting identity user: {errors}");
+        var employeeOnProjectResponse = await ProjectApiClient.GetAsync($"Project/employeeOnProject/{employeeId}");
 
-                return;
+        if (employeeOnProjectResponse.IsSuccessStatusCode)
+        {
+            // Read the content of the response as a string
+            var content = await employeeOnProjectResponse.Content.ReadAsStringAsync();
+
+            // Convert the response content to a boolean (assuming API returns "true" or "false")
+            bool employeeOnProject = bool.Parse(content);
+
+            if (!employeeOnProject)
+            {
+                // Fetch the identity user using the userId
+                var identityUser = await UserManager.FindByIdAsync(userId.ToString());
+                if (identityUser != null)
+                {
+                    // Delete the identity user
+                    var deleteUserResult = await UserManager.DeleteAsync(identityUser);
+                    if (!deleteUserResult.Succeeded)
+                    {
+                        var errors = string.Join(", ", deleteUserResult.Errors.Select(e => e.Description));
+                        Console.WriteLine($"Error deleting identity user: {errors}");
+
+                        return;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Identity user not found.");
+                    return;
+                }
+
+                // Delete employee from api
+                var requestUrl = $"Employee/{employeeId}";
+                var response = await EmployeeApiClient.DeleteAsync(requestUrl);
+                if (response.IsSuccessStatusCode)
+                {
+                    // Delete employeeEco from api
+                    var requestUrlEco = $"EmployeeEco/{employeeId}";
+                    var responseEco = await EconomyApiClient.DeleteAsync(requestUrlEco);
+
+                    Navigation.NavigateTo("/employees");
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
+
+                }        
+            }
+            else
+            {
+                // Employee is assigned to a project
+                Snackbar.Add("This employee is connected to a project, please reassign or finish the project.", Severity.Warning);
             }
         }
         else
         {
-            Console.WriteLine("Identity user not found.");
-            return;
+            var errorContent = await employeeOnProjectResponse.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error: {employeeOnProjectResponse.StatusCode}, Details: {errorContent}");
         }
-
-        // Delete employee from api
-        var requestUrl = $"Employee/{employeeId}";
-        var response = await EmployeeApiClient.DeleteAsync(requestUrl);
-        if (response.IsSuccessStatusCode)
-        {
-            // Delete employeeEco from api
-            var requestUrlEco = $"EmployeeEco/{employeeId}";
-            var responseEco = await EconomyApiClient.DeleteAsync(requestUrlEco);
-
-            Navigation.NavigateTo("/employees");
-        }
-        else
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
-
-        }        
     }
 }

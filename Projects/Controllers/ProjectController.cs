@@ -167,6 +167,15 @@ namespace Projects.Controllers
             return NoContent();
         }
 
+        // GET: api/Project/employeeOnProject/{employeeId}
+        [HttpGet("employeeOnProject/{employeeId}")]
+        public async Task<ActionResult<bool>> CheckProjectExistsByEmployeeId(Guid employeeId)
+        {
+            var exists = await _context.Projects.AnyAsync(p => p.EmployeeId == employeeId);
+
+            return Ok(exists);
+        }
+
         private bool ProjectExists(Guid id)
         {
             return _context.Projects.Any(p => p.Id == id);
