@@ -7,7 +7,7 @@
 @inject AuthService AuthService
 @inject IHttpClientFactory Http
 @inject NavigationManager Navigation
-@attribute [Authorize(Roles = "Admin, Employee")]
+@attribute [Authorize(Roles = "Admin")]
  <div class="row">
     <div class="col-md-6"
     >
@@ -121,24 +121,16 @@
     }
     private async Task LoadProjectEco()
     {
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
-        {
-            var requestUrl = $"ProjectEco?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            projectEcos = await EconomyApiClient.GetFromJsonAsync<List<ProjectEcoDto>>(requestUrl);
-            filteredProjectEcos = projectEcos;
-        }
+        var requestUrl = $"ProjectEco";
+        projectEcos = await EconomyApiClient.GetFromJsonAsync<List<ProjectEcoDto>>(requestUrl);
+        filteredProjectEcos = projectEcos;
     }
 
     private async Task LoadEmployeeEco()
     {
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
-        {
-            var requestUrl = $"EmployeeEco?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            employeeEcos = await EconomyApiClient.GetFromJsonAsync<List<EmployeeEcoDto>>(requestUrl);
-            filteredEmployeeEcos = employeeEcos;
-        }
+        var requestUrl = $"EmployeeEco";
+        employeeEcos = await EconomyApiClient.GetFromJsonAsync<List<EmployeeEcoDto>>(requestUrl);
+        filteredEmployeeEcos = employeeEcos;
     }
 
     private void Search(int i)

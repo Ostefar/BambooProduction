@@ -27,14 +27,8 @@ namespace Economy.Controllers
 
         // GET: api/ProjectEco
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProjectEcoDto>>> GetProjectEcos([FromQuery] string loggedInUserRole)
-        {
-
-            if (loggedInUserRole != "Admin")
-            {
-                return Unauthorized("You are not allowed to access this resource.");
-            }   
-
+        public async Task<ActionResult<IEnumerable<ProjectEcoDto>>> GetProjectEcos()
+        {  
             // Call the GetProjectNames API endpoint
             HttpResponseMessage response = await _projectApiClient.GetAsync("Project/names");
             var projectNames = await response.Content.ReadFromJsonAsync<List<ProjectDto>>();

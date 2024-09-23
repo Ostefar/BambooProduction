@@ -124,8 +124,6 @@
                 <button type="submit" class="w-100 btn btn-lg btn-warning">Update</button>
                 <br>
                 <button type="button" class="w-100 btn btn-lg btn-danger" @onclick="() => DeleteProject()">Delete</button>
-                <br>
-                <button type="button" class="w-100 btn btn-lg btn-info">Economy</button>
             </div>
         </div>
     </EditForm>
@@ -162,54 +160,41 @@
 
     private async Task LoadProjectDetails()
     {
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
+        var requestUrl = $"Project/{projectId}";
+        project = await ProjectApiClient.GetFromJsonAsync<ProjectDto>(requestUrl);
+
+        // Copy data from project to Input
+        if (project != null)
         {
+            Input.ProjectName = project.ProjectName;
+            Input.ProjectDescription = project.ProjectDescription;
+            Input.Priority = project.Priority;
+            Input.BillingType = project.BillingType;
+            Input.StartDate = project.StartDate;
+            Input.EndDate = project.EndDate;
+            Input.CustomerId = project.CustomerId;
+            Input.EmployeeId = project.EmployeeId;
+            Input.CreatedDate = project.CreatedDate;
+            Input.LastUpdatedBy = project.LastUpdatedBy;
+            Input.LastUpdated = project.LastUpdated;
 
-            var requestUrl = $"Project/{projectId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            project = await ProjectApiClient.GetFromJsonAsync<ProjectDto>(requestUrl);
+            // Set selected IDs for the select elements
+            selectedCustomerId = project.CustomerId;
+            selectedEmployeeId = project.EmployeeId;
 
-            // Copy data from project to Input
-            if (project != null)
-            {
-                Input.ProjectName = project.ProjectName;
-                Input.ProjectDescription = project.ProjectDescription;
-                Input.Priority = project.Priority;
-                Input.BillingType = project.BillingType;
-                Input.StartDate = project.StartDate;
-                Input.EndDate = project.EndDate;
-                Input.CustomerId = project.CustomerId;
-                Input.EmployeeId = project.EmployeeId;
-                Input.CreatedDate = project.CreatedDate;
-                Input.LastUpdatedBy = project.LastUpdatedBy;
-                Input.LastUpdated = project.LastUpdated;
-
-                // Set selected IDs for the select elements
-                selectedCustomerId = project.CustomerId;
-                selectedEmployeeId = project.EmployeeId;
-
-            }
         }
     }
 
     private async Task LoadCustomers()
     {
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
-        {
-            var requestUrl = $"Customer?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            customers = await ProjectApiClient.GetFromJsonAsync<List<CustomerDto>>(requestUrl);
-        }
+        var requestUrl = $"Customer";
+        customers = await ProjectApiClient.GetFromJsonAsync<List<CustomerDto>>(requestUrl);
     }
 
     private async Task LoadEmployees()
     {
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
-        {
-            var requestUrl = $"Employee?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            employees = await EmployeeApiClient.GetFromJsonAsync<List<EmployeeDto>>(requestUrl);
-        }
+        var requestUrl = $"Employee";
+        employees = await EmployeeApiClient.GetFromJsonAsync<List<EmployeeDto>>(requestUrl);
     }
 
     private async Task UpdateProject()
@@ -224,72 +209,58 @@
             userEmail = await UserManager.GetEmailAsync(identityUser);
         }
 
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-        if (loggedInUserRole == "Admin")
-        {
-            var projectUpdated = new ProjectDto
-                {
-                    ProjectName = Input.ProjectName,
-                    ProjectDescription = Input.ProjectDescription,
-                    Priority = Input.Priority,
-                    BillingType = Input.BillingType,
-                    StartDate = Input.StartDate,
-                    EndDate = Input.EndDate,
-                    CustomerId = selectedCustomerId,
-                    EmployeeId = selectedEmployeeId,
-                    LoggedInUserRole = loggedInUserRole,
-                    CreatedDate = DateTime.Now,
-                    LastUpdated = DateTime.Now,
-                    LastUpdatedBy = userEmail,
-                };
-            var requestUrl = $"Project/{projectId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            try
+        var projectUpdated = new ProjectDto
             {
-                var response = await ProjectApiClient.PutAsJsonAsync(requestUrl, projectUpdated);
-                if (response.IsSuccessStatusCode)
-                {
-                    Navigation.NavigateTo("/projects");
-                }
-                else
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception: {ex.Message}");
-            }
-        }
-    }
-
-    private async Task DeleteProject()
-    {
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-
-        if (loggedInUserRole == "Admin")
+                ProjectName = Input.ProjectName,
+                ProjectDescription = Input.ProjectDescription,
+                Priority = Input.Priority,
+                BillingType = Input.BillingType,
+                StartDate = Input.StartDate,
+                EndDate = Input.EndDate,
+                CustomerId = selectedCustomerId,
+                EmployeeId = selectedEmployeeId,
+                CreatedDate = DateTime.Now,
+                LastUpdated = DateTime.Now,
+                LastUpdatedBy = userEmail,
+            };
+        var requestUrl = $"Project/{projectId}";
+        try
         {
-            // Delete project from api
-            var requestUrl = $"Project/{projectId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            var response = await ProjectApiClient.DeleteAsync(requestUrl);
-
+            var response = await ProjectApiClient.PutAsJsonAsync(requestUrl, projectUpdated);
             if (response.IsSuccessStatusCode)
             {
-                // Delete projectEco from api
-                var requestUrlEco = $"ProjectEco/{projectId}";
-                var responseEco = await EconomyApiClient.DeleteAsync(requestUrlEco);
                 Navigation.NavigateTo("/projects");
             }
             else
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
-
             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteProject()
+    {
+        // Delete project from api
+        var requestUrl = $"Project/{projectId}";
+        var response = await ProjectApiClient.DeleteAsync(requestUrl);
+
+        if (response.IsSuccessStatusCode)
+        {
+            // Delete projectEco from api
+            var requestUrlEco = $"ProjectEco/{projectId}";
+            var responseEco = await EconomyApiClient.DeleteAsync(requestUrlEco);
+            Navigation.NavigateTo("/projects");
         }
         else
         {
-            Console.WriteLine("Unauthorized: Admin role required.");
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
+
         }
     }
 }

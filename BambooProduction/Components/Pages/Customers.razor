@@ -73,13 +73,9 @@
 
     private async Task LoadCustomers()
     {
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
-        {
-            var requestUrl = $"Customer?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            customers = await ProjectApiClient.GetFromJsonAsync<List<CustomerDto>>(requestUrl);
-            filteredCustomers = customers;
-        }
+        var requestUrl = $"Customer";
+        customers = await ProjectApiClient.GetFromJsonAsync<List<CustomerDto>>(requestUrl);
+        filteredCustomers = customers;
     }
 
     private void SearchCustomers()

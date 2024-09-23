@@ -10,7 +10,6 @@ namespace Projects.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // [Authorize(Roles = "Admin")]
     public class ProjectController : ControllerBase
     {
         private readonly ProjectDbContext _context;
@@ -24,13 +23,8 @@ namespace Projects.Controllers
 
         // GET: api/Projects
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProjectDto>>> GetProjects([FromQuery] string loggedInUserRole)
+        public async Task<ActionResult<IEnumerable<ProjectDto>>> GetProjects()
         {
-            if (loggedInUserRole != "Admin")
-            {
-                return Unauthorized("You are not allowed to access this resource.");
-            }
-
             var projects = await _context.Projects
                 .Select(p => new ProjectDto
                 {
@@ -69,13 +63,8 @@ namespace Projects.Controllers
 
         // GET: api/Project/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<ProjectDto>> GetProject(Guid id, [FromQuery] string loggedInUserRole)
+        public async Task<ActionResult<ProjectDto>> GetProject(Guid id)
         {
-            if (loggedInUserRole != "Admin")
-            {
-                return Unauthorized("You are not allowed to access this resource.");
-            }
-
             var project = await _context.Projects
                 .Where(p => p.Id == id)
                 .Select(p => new ProjectDto
@@ -108,11 +97,6 @@ namespace Projects.Controllers
         [HttpPost]
         public async Task<ActionResult<Project>> PostProject(ProjectDto project)
         {
-            if (project.LoggedInUserRole != "Admin")
-            {
-                return Unauthorized("You are not allowed to create a project.");
-            }
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -128,13 +112,8 @@ namespace Projects.Controllers
 
         // PUT: api/Project/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProject(Guid id, ProjectDto project, [FromQuery] string loggedInUserRole)
+        public async Task<IActionResult> PutProject(Guid id, ProjectDto project)
         {
-            if (project.LoggedInUserRole != "Admin")
-            {
-                return Unauthorized("You are not allowed to update this project.");
-            }
-
             var existingProject = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
 
             if (existingProject == null)
@@ -173,13 +152,8 @@ namespace Projects.Controllers
 
         // DELETE: api/Project/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProject(Guid id, [FromQuery] string loggedInUserRole)
+        public async Task<IActionResult> DeleteProject(Guid id)
         {
-            if (loggedInUserRole != "Admin")
-            {
-                return Unauthorized("You are not allowed to delete this project.");
-            }
-
             var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
 
             if (project == null)

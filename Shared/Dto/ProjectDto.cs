@@ -17,8 +17,6 @@ namespace Shared.Dto
 
         public BillingTypeEnum BillingType { get; set; }
 
-        public string LoggedInUserRole { get; set; }
-
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 

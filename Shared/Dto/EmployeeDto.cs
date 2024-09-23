@@ -13,8 +13,6 @@ namespace Shared.Dto
         public string Email { get; set; }
         public int JobTitle { get; set; }
         public string UserId { get; set; }
-
-        public string LoggedInUserRole { get; set; }
         public DateTime BirthDate { get; set; }
         public DateTime HiringDate { get; set; }
         public DateTime CreatedDate { get; set; }

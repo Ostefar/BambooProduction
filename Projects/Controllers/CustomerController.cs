@@ -10,7 +10,6 @@ namespace Projects.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // [Authorize(Roles = "Admin")]
     public class CustomerController : ControllerBase
     {
         private readonly ProjectDbContext _context;
@@ -24,13 +23,8 @@ namespace Projects.Controllers
 
         // GET: api/Customers
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomers([FromQuery] string loggedInUserRole)
+        public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomers()
         {
-            if (loggedInUserRole != "Admin")
-            {
-                return Unauthorized("You are not allowed to access this resource.");
-            }
-
             var customers = await _context.Customers
                 .Select(c => new CustomerDto
                 {
@@ -62,13 +56,8 @@ namespace Projects.Controllers
 
         // GET: api/Customer/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<CustomerDto>> GetCustomer(Guid id, [FromQuery] string loggedInUserRole)
+        public async Task<ActionResult<CustomerDto>> GetCustomer(Guid id)
         {
-            if (loggedInUserRole != "Admin")
-            {
-                return Unauthorized("You are not allowed to access this resource.");
-            }
-
             var customer = await _context.Customers
                 .Where(c => c.Id == id)
                 .Select(c => new CustomerDto
@@ -108,11 +97,6 @@ namespace Projects.Controllers
         [HttpPost]
         public async Task<ActionResult<Customer>> PostCustomer(CustomerDto customer)
         {
-            if (customer.LoggedInUserRole != "Admin")
-            {
-                return Unauthorized("You are not allowed to create a customer.");
-            }
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -132,13 +116,8 @@ namespace Projects.Controllers
 
         // PUT: api/Customer/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCustomer(Guid id, CustomerDto customer, [FromQuery] string loggedInUserRole)
+        public async Task<IActionResult> PutCustomer(Guid id, CustomerDto customer)
         {
-            if (customer.LoggedInUserRole != "Admin")
-            {
-                return Unauthorized("You are not allowed to update this customer.");
-            }
-
             var existingCustomer = await _context.Customers
                 .Include(c => c.Address)
                 .FirstOrDefaultAsync(c => c.Id == id);
@@ -187,13 +166,8 @@ namespace Projects.Controllers
 
         // DELETE: api/Customer/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCustomer(Guid id, [FromQuery] string loggedInUserRole)
+        public async Task<IActionResult> DeleteCustomer(Guid id)
         {
-            if (loggedInUserRole != "Admin")
-            {
-                return Unauthorized("You are not allowed to delete this customer.");
-            }
-
             var customer = await _context.Customers
                 .Include(c => c.Address)
                 .FirstOrDefaultAsync(c => c.Id == id);

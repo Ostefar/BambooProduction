@@ -141,22 +141,16 @@
 
     private async Task LoadCustomers()
     {
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
-        {
-            var requestUrl = $"Customer?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            customers = await ProjectApiClient.GetFromJsonAsync<List<CustomerDto>>(requestUrl);
-        }
+        var requestUrl = $"Customer";
+        customers = await ProjectApiClient.GetFromJsonAsync<List<CustomerDto>>(requestUrl);
+        
     }
 
     private async Task LoadEmployees()
     {
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
-        {
-            var requestUrl = $"Employee?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            employees = await EmployeeApiClient.GetFromJsonAsync<List<EmployeeDto>>(requestUrl);
-        }
+        var requestUrl = $"Employee";
+        employees = await EmployeeApiClient.GetFromJsonAsync<List<EmployeeDto>>(requestUrl);
+     
     }
 
     private void BillingTypeChanged(ChangeEventArgs e)
@@ -173,9 +167,6 @@
 
     public async Task RegisterProject()
     {
-
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-
         var userEmail = "";
 
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -196,7 +187,6 @@
             EmployeeId = selectedEmployeeId,
             StartDate = Input.StartDate,
             EndDate = Input.EndDate,
-            LoggedInUserRole = loggedInUserRole,
             Priority = Input.Priority,
             BillingType = Input.BillingType,
             CreatedDate = DateTime.Now,

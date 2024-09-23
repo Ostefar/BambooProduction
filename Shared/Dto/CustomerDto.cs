@@ -16,8 +16,6 @@ namespace Shared.Dto
 
         public string ContactPersonEmail { get; set; }
 
-        public string LoggedInUserRole { get; set; }
-
         public DateTime CreatedDate { get; set; }
 
         public DateTime LastUpdated { get; set; }

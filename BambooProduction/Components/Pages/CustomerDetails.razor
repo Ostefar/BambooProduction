@@ -115,8 +115,6 @@
                 <button type="submit" class="w-100 btn btn-lg btn-warning">Update</button>
                 <br>
                 <button type="button" class="w-100 btn btn-lg btn-danger" @onclick="() => DeleteCustomer()">Delete</button>
-                <br>
-                <button type="button" class="w-100 btn btn-lg btn-info">Economy</button>
             </div>
         </div>
     </EditForm>
@@ -138,30 +136,25 @@
 
     private async Task LoadCustomerDetails()
     {
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
+        var requestUrl = $"Customer/{customerId}";
+        customer = await ProjectApiClient.GetFromJsonAsync<CustomerDto>(requestUrl);
+
+        // Copy data from customer to Input
+        if (customer != null)
         {
-
-            var requestUrl = $"Customer/{customerId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            customer = await ProjectApiClient.GetFromJsonAsync<CustomerDto>(requestUrl);
-
-            // Copy data from customer to Input
-            if (customer != null)
-            {
-                Input.CompanyName = customer.CompanyName;
-                Input.Cvr = customer.Cvr;
-                Input.ContactPersonFirstName = customer.ContactPersonFirstName;
-                Input.ContactPersonLastName = customer.ContactPersonLastName;
-                Input.ContactPersonEmail = customer.ContactPersonEmail;
-                Input.ContactPersonPhone = customer.ContactPersonPhone;
-                Input.CreatedDate = customer.CreatedDate;
-                Input.LastUpdated = customer.LastUpdated;
-                Input.LastUpdatedBy = customer.LastUpdatedBy;
-                Input.AddressLine = customer.Address.AddressLine;
-                Input.City = customer.Address.City;
-                Input.ZipCode = customer.Address.ZipCode;
-                Input.Country = customer.Address.Country;
-            }
+            Input.CompanyName = customer.CompanyName;
+            Input.Cvr = customer.Cvr;
+            Input.ContactPersonFirstName = customer.ContactPersonFirstName;
+            Input.ContactPersonLastName = customer.ContactPersonLastName;
+            Input.ContactPersonEmail = customer.ContactPersonEmail;
+            Input.ContactPersonPhone = customer.ContactPersonPhone;
+            Input.CreatedDate = customer.CreatedDate;
+            Input.LastUpdated = customer.LastUpdated;
+            Input.LastUpdatedBy = customer.LastUpdatedBy;
+            Input.AddressLine = customer.Address.AddressLine;
+            Input.City = customer.Address.City;
+            Input.ZipCode = customer.Address.ZipCode;
+            Input.Country = customer.Address.Country;
         }
     }
 
@@ -176,62 +169,32 @@
         {
             userEmail = await UserManager.GetEmailAsync(identityUser);
         }
-
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-        if (loggedInUserRole == "Admin")
+        var customerUpdated = new CustomerDto
         {
-            var customerUpdated = new CustomerDto
-                {
-                    CompanyName = Input.CompanyName,
-                    Cvr = Input.Cvr,
-                    ContactPersonFirstName = Input.ContactPersonFirstName,
-                    ContactPersonLastName = Input.ContactPersonLastName,
-                    ContactPersonEmail = Input.ContactPersonEmail,
-                    ContactPersonPhone = Input.ContactPersonPhone,
-                    LoggedInUserRole = loggedInUserRole,
-                    CreatedDate = DateTime.Now,
-                    LastUpdated = DateTime.Now,
-                    LastUpdatedBy = userEmail,
-                    Address = new AddressDto
-                    {
-                        AddressLine = Input.AddressLine,
-                        City = Input.City,
-                        ZipCode = Input.ZipCode,
-                        Country = Input.Country,
-                        LastUpdated = DateTime.Now,
-                        LastUpdatedBy = userEmail,
-                    }
-                };
-            var requestUrl = $"Customer/{customerId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            try
+            CompanyName = Input.CompanyName,
+            Cvr = Input.Cvr,
+            ContactPersonFirstName = Input.ContactPersonFirstName,
+            ContactPersonLastName = Input.ContactPersonLastName,
+            ContactPersonEmail = Input.ContactPersonEmail,
+            ContactPersonPhone = Input.ContactPersonPhone,
+            CreatedDate = DateTime.Now,
+            LastUpdated = DateTime.Now,
+            LastUpdatedBy = userEmail,
+            Address = new AddressDto
             {
-                var response = await ProjectApiClient.PutAsJsonAsync(requestUrl, customerUpdated);
-                if (response.IsSuccessStatusCode)
-                {
-                    Navigation.NavigateTo("/customers");
-                }
-                else
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
-                }
+                AddressLine = Input.AddressLine,
+                City = Input.City,
+                ZipCode = Input.ZipCode,
+                Country = Input.Country,
+                LastUpdated = DateTime.Now,
+                LastUpdatedBy = userEmail,
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception: {ex.Message}");
-            }
-        }
-    }
+        };
 
-    private async Task DeleteCustomer()
-    {
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-
-        if (loggedInUserRole == "Admin")
+        var requestUrl = $"Customer/{customerId}";
+        try
         {
-            // Delete customer from api
-            var requestUrl = $"Customer/{customerId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            var response = await ProjectApiClient.DeleteAsync(requestUrl);
+            var response = await ProjectApiClient.PutAsJsonAsync(requestUrl, customerUpdated);
             if (response.IsSuccessStatusCode)
             {
                 Navigation.NavigateTo("/customers");
@@ -240,13 +203,29 @@
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
-
             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
+        
+    }
+
+    private async Task DeleteCustomer()
+    {
+        // Delete customer from api
+        var requestUrl = $"Customer/{customerId}";
+        var response = await ProjectApiClient.DeleteAsync(requestUrl);
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/customers");
         }
         else
         {
-            Console.WriteLine("Unauthorized: Admin role required.");
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
+
         }
     }
-
 }

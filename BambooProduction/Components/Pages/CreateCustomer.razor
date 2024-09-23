@@ -107,9 +107,6 @@
 
     public async Task RegisterCustomer()
     {
-
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-
         var userEmail = "";
 
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -139,7 +136,6 @@
             ContactPersonFirstName = Input.ContactPersonFirstName,
             ContactPersonLastName = Input.ContactPersonLastName,
             ContactPersonPhone = Input.ContactPersonPhone,
-            LoggedInUserRole = loggedInUserRole,
             ContactPersonEmail = Input.ContactPersonEmail,
             CreatedDate = DateTime.Now,
             LastUpdated = DateTime.Now,

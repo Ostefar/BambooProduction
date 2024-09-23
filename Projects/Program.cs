@@ -17,42 +17,8 @@ builder.Services.AddSingleton<IConverter<Project, ProjectDto>, ProjectConverter>
 builder.Services.AddSingleton<IConverter<Address, AddressDto>, AddressConverter>();
 builder.Services.AddSingleton<IConverter<Customer, CustomerDto>, CustomerConverter>();
 
-// Configure JWT authentication
-/*builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        var key = builder.Configuration["Jwt:Key"];
-        var issuer = builder.Configuration["Jwt:Issuer"];
-
-        if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(issuer))
-        {
-            throw new InvalidOperationException("JWT configuration settings are missing.");
-        }
-
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = issuer,
-            ValidAudience = issuer,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
-        };
-    });*/
-/*builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("AdminPolicy", policy =>
-    {
-        policy.RequireRole("Admin");
-    });
-});*/
-
-
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
