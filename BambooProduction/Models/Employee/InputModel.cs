@@ -66,5 +66,10 @@ namespace BambooProduction.Models.Employee
         [Required]
         [StringLength(56, ErrorMessage = "Country must be between 2 and 56 characters", MinimumLength = 2)]
         public string Country { get; set; } = "";
+
+        // EmployeeEco related fields
+        [Required]
+        [StringLength(4, ErrorMessage = "HourlyWage must be between 3 and 4 characters", MinimumLength = 3)]
+        public String HourlyWage { get; set; }
     }
 }

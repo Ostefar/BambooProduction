@@ -3,6 +3,7 @@ using Economy.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared.Dto;
+using Shared.Interfaces;
 using System.Linq;
 
 namespace Economy.Controllers
@@ -13,11 +14,13 @@ namespace Economy.Controllers
     {
         private readonly EconomyDbContext _context;
         private HttpClient _employeeApiClient;
+        private readonly IConverter<EmployeeEco, EmployeeEcoDto> taskConverter;
 
-        public EmployeeEcoController(EconomyDbContext context, IHttpClientFactory httpClientFactory)
+        public EmployeeEcoController(EconomyDbContext context, IHttpClientFactory httpClientFactory, IConverter<EmployeeEco, EmployeeEcoDto> converter)
         {
             _context = context;
             _employeeApiClient = httpClientFactory.CreateClient("EmployeeApi");
+            taskConverter = converter;
         }
 
         // GET: api/EmployeeEco
@@ -52,36 +55,36 @@ namespace Economy.Controllers
 
         // GET: api/EmployeeEco/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<EmployeeEco>> GetEmployeeEco(Guid id)
+        public async Task<ActionResult<EmployeeEcoDto>> GetEmployeeEco(Guid id)
         {
             var employeeEco = await _context.EmployeeEcos
-                .Include(e => e.SickLeaves)
-                .Include(e => e.VacationDays)
-                .FirstOrDefaultAsync(e => e.Id == id);
+                .Where(e => e.Id == id)
+                .Select(e => new EmployeeEcoDto
+                {
+                    Id = e.Id // vælg relevante felter
+
+                })
+                .FirstOrDefaultAsync();
 
             if (employeeEco == null)
             {
                 return NotFound();
             }
 
-            return employeeEco;
+            return Ok(employeeEco);
         }
 
         // POST: api/EmployeeEco
         [HttpPost]
-        public async Task<ActionResult<EmployeeEco>> PostEmployeeEco(EmployeeEco employeeEco)
+        public async Task<ActionResult<EmployeeEco>> PostEmployeeEco(EmployeeEcoDto employeeEco)
         {
-            employeeEco.Id = Guid.NewGuid();
-            employeeEco.CreatedDate = DateTime.UtcNow;
-            employeeEco.LastUpdated = DateTime.UtcNow;
+            // Convert dto to model
+            var convertedEmployeeEco = taskConverter.Convert(employeeEco);
 
-            employeeEco.SickDaysTotal = CalculateSickDaysTotal(employeeEco.SickLeaves);
-            employeeEco.VacationDaysTotal = CalculateVacationDaysTotal(employeeEco.VacationDays);
-
-            _context.EmployeeEcos.Add(employeeEco);
+            _context.EmployeeEcos.Add(convertedEmployeeEco);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetEmployeeEco), new { id = employeeEco.Id }, employeeEco);
+            return Ok(convertedEmployeeEco);
         }
 
         // PUT: api/EmployeeEco/{id}
@@ -124,7 +127,7 @@ namespace Economy.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmployeeEco(Guid id)
         {
-            var employeeEco = await _context.EmployeeEcos.FindAsync(id);
+            var employeeEco = await _context.EmployeeEcos.FirstOrDefaultAsync(p => p.EmployeeId == id);
             if (employeeEco == null)
             {
                 return NotFound();

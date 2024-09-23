@@ -28,7 +28,7 @@
             <ValidationSummary class="text-danger" role="alert" />
 
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.ProjectName" class="form-control" placeholder="project Name" />
+                <InputText @bind-Value="Input.ProjectName" class="form-control" placeholder="Project Name" />
                 <label for="projectName">Project name</label>
                 <ValidationMessage For="() => Input.ProjectName" class="text-danger" />
             </div>
@@ -53,7 +53,7 @@
 
             <div class="form-floating mb-3">
                 <select @bind="selectedEmployeeId" class="form-control">
-                    <option value="">Select a employee</option>
+                    <option value="">Select an employee</option>
                     @foreach (var employee in employees)
                     {
                         <option value="@employee.Id">@employee.FirstName @employee.LastName</option>
@@ -75,7 +75,7 @@
             </div>
 
             <div class="form-floating mb-3">
-                <InputSelect @bind-Value="Input.BillingType" class="form-control">
+                <InputSelect @bind-Value="Input.BillingType" class="form-control" @onchange="BillingTypeChanged">
                     @foreach (var billingType in Enum.GetValues(typeof(BillingTypeEnum)))
                     {
                         <option value="@(billingType)">@billingType</option>
@@ -85,14 +85,23 @@
                 <ValidationMessage For="() => Input.BillingType" class="text-danger" />
             </div>
 
+            @if (Input.BillingType == BillingTypeEnum.Project)
+            {
+                <div class="form-floating mb-3">
+                    <InputNumber @bind-Value="Input.FixedPriceAmount" class="form-control" placeholder="Fixed Price Amount" />
+                    <label for="fixedPriceAmount">Fixed Price Amount</label>
+                    <ValidationMessage For="() => Input.FixedPriceAmount" class="text-danger" />
+                </div>
+            }
+
             <div class="form-floating mb-3">
-                <InputDate @bind-Value="Input.StartDate" class="form-control" placeholder="Hiring Date" min="1900-01-01" max="2100-12-31" />
+                <InputDate @bind-Value="Input.StartDate" class="form-control" placeholder="Start Date" min="1900-01-01" max="2100-12-31" />
                 <label for="startDate">Start Date</label>
                 <ValidationMessage For="() => Input.StartDate" class="text-danger" />
             </div>
 
             <div class="form-floating mb-3">
-                <InputDate @bind-Value="Input.EndDate" class="form-control" placeholder="Hiring Date" min="1900-01-01" max="2100-12-31" />
+                <InputDate @bind-Value="Input.EndDate" class="form-control" placeholder="End Date" min="1900-01-01" max="2100-12-31" />
                 <label for="endDate">End Date</label>
                 <ValidationMessage For="() => Input.EndDate" class="text-danger" />
             </div>
@@ -110,6 +119,8 @@
 
     private HttpClient EmployeeApiClient;
 
+    private HttpClient EconomyApiClient;
+
     private List<CustomerDto> customers = new();
 
     private List<EmployeeDto> employees = new();
@@ -122,6 +133,8 @@
     {
         ProjectApiClient = Http.CreateClient("ProjectApi");
         EmployeeApiClient = Http.CreateClient("EmployeeApi");
+        EconomyApiClient = Http.CreateClient("EconomyApi");
+
         await LoadCustomers();
         await LoadEmployees();
     }
@@ -145,7 +158,18 @@
             employees = await EmployeeApiClient.GetFromJsonAsync<List<EmployeeDto>>(requestUrl);
         }
     }
-    
+
+    private void BillingTypeChanged(ChangeEventArgs e)
+    {
+        var selectedValue = e.Value?.ToString();
+
+        if (Enum.TryParse<BillingTypeEnum>(selectedValue, out var billingType))
+        {
+            Input.BillingType = billingType;
+        }
+    }
+
+
 
     public async Task RegisterProject()
     {
@@ -165,6 +189,7 @@
         // Create project
         var project = new ProjectDto
         {
+            Id = Guid.NewGuid(),
             ProjectName = Input.ProjectName,
             ProjectDescription = Input.ProjectDescription,
             CustomerId = selectedCustomerId,
@@ -186,6 +211,23 @@
             Logger.LogError("Failed to create project.");
             return;
         }
-        Navigation.NavigateTo("/projects");
+
+        // Create ProjectEco using the ProjectEco API
+        var projectEco = new ProjectEcoDto
+            {
+                Id = Guid.NewGuid(),
+                ProjectId = project.Id, // får det forkerte id her
+                TotalCost = 0,
+                FixedPrice = Input.FixedPriceAmount,
+                HoursTotal = 0,
+                MaterialsPriceTotal = 0,
+                CreatedDate = DateTime.Now,
+                LastUpdated = DateTime.Now,
+                LastUpdatedBy = userEmail
+            };
+
+        var responseEco = await EconomyApiClient.PostAsJsonAsync("ProjectEco", projectEco);
+
+        Navigation.NavigateTo("/projects"); // navigate to project-eco/{id}
     }
 }

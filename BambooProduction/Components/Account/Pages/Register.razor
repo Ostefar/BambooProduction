@@ -93,6 +93,12 @@
             </div>
 
             <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.HourlyWage" class="form-control" placeholder="HourlyWage" />
+                <label for="HourlyWage">Hourly wage</label>
+                <ValidationMessage For="() => Input.HourlyWage" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
                 <InputDate @bind-Value="Input.BirthDate" class="form-control" placeholder="Birth Date" min="1900-01-01" max="2100-12-31" />
                 <label for="birthDate">Birth Date</label>
                 <ValidationMessage For="() => Input.BirthDate" class="text-danger" />
@@ -145,13 +151,15 @@
     private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
 
     private HttpClient EmployeeApiClient;
+    private HttpClient EconomyApiClient;
 
     protected override async Task OnInitializedAsync()
     {
         EmployeeApiClient = Http.CreateClient("EmployeeApi");
+        EconomyApiClient = Http.CreateClient("EconomyApi");
     }
 
-    public async Task RegisterUser() // EditContext editContext
+    public async Task RegisterUser() 
     {
         var loggedInUserRole = await AuthService.GetUserRoleAsync();
         var userEmail = "";
@@ -188,34 +196,35 @@
                 await UserManager.AddToRoleAsync(user, "Admin");
             }
 
-            var userId = await UserManager.GetUserIdAsync(user); // wrong tager den nye users id istedet for den er logget på
+            var userId = await UserManager.GetUserIdAsync(user); 
 
             // Create Employee using the Employee API   
             var employee = new EmployeeDto
+            {
+                Id = Guid.NewGuid(),
+                FirstName = Input.FirstName,
+                LastName = Input.LastName,
+                Phone = Input.Phone,
+                Email = Input.Email,
+                JobTitle = Input.JobTitle,
+                BirthDate = Input.BirthDate,
+                HiringDate = Input.HiringDate,
+                UserId = userId,
+                LoggedInUserRole = loggedInUserRole, // to be delete when frontend dev decide which auth to use
+                CreatedDate = DateTime.Now,
+                LastUpdated = DateTime.Now,
+                LastUpdatedBy = userEmail,
+                Address = new AddressDto
                 {
-                    FirstName = Input.FirstName,
-                    LastName = Input.LastName,
-                    Phone = Input.Phone,
-                    Email = Input.Email,
-                    JobTitle = Input.JobTitle,
-                    BirthDate = Input.BirthDate,
-                    HiringDate = Input.HiringDate,
-                    UserId = userId,
-                    LoggedInUserRole = loggedInUserRole, // to be delete when frontend dev decide which auth to use
+                    AddressLine = Input.AddressLine,
+                    City = Input.City,
+                    ZipCode = Input.ZipCode,
+                    Country = Input.Country,
                     CreatedDate = DateTime.Now,
                     LastUpdated = DateTime.Now,
                     LastUpdatedBy = userEmail,
-                    Address = new AddressDto
-                    {
-                        AddressLine = Input.AddressLine,
-                        City = Input.City,
-                        ZipCode = Input.ZipCode,
-                        Country = Input.Country,
-                        CreatedDate = DateTime.Now,
-                        LastUpdated = DateTime.Now,
-                        LastUpdatedBy = userEmail,
-                    }
-                };
+                }
+            };
 
         var response = await EmployeeApiClient.PostAsJsonAsync("Employee", employee);
 
@@ -234,6 +243,21 @@
                 identityErrors = new[] { new IdentityError { Description = "Failed to create employee, user account has been deleted." } };
                 return;
             }
+
+        // Create EmployeeEco using the EmployeeEco API
+        var employeeEco = new EmployeeEcoDto
+            {
+                Id = Guid.NewGuid(),
+                EmployeeId = employee.Id,
+                HourlyWage = Input.HourlyWage,
+                SickDaysTotal = 0,
+                VacationDaysTotal = 0,
+                CreatedDate = DateTime.Now,
+                LastUpdated = DateTime.Now,
+                LastUpdatedBy = userEmail
+            };
+
+        var responseEco = await EconomyApiClient.PostAsJsonAsync("EmployeeEco", employeeEco);
 
             var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));

@@ -144,7 +144,6 @@ namespace Employees.Controllers
                 {
                     return Unauthorized();
                 }
-                employee.Id = Guid.NewGuid();
                 employee.AddressId = Guid.NewGuid();
 
                 // Convert dto to model

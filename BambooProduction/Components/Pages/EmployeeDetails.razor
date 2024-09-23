@@ -141,10 +141,12 @@ else
     private UpdateModel Input { get; set; } = new();
     private EmployeeDto employee;
     private HttpClient EmployeeApiClient;
+    private HttpClient EconomyApiClient;
 
     protected override async Task OnInitializedAsync()
     {
         EmployeeApiClient = Http.CreateClient("EmployeeApi");
+        EconomyApiClient = Http.CreateClient("EconomyApi");
         await LoadEmployeeDetails();
     }
 
@@ -266,6 +268,10 @@ else
             var response = await EmployeeApiClient.DeleteAsync(requestUrl);
             if (response.IsSuccessStatusCode)
             {
+                // Delete employeeEco from api
+                var requestUrlEco = $"EmployeeEco/{employeeId}";
+                var responseEco = await EconomyApiClient.DeleteAsync(requestUrlEco);
+
                 Navigation.NavigateTo("/employees");
             }
             else

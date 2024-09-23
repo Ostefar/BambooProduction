@@ -3,6 +3,7 @@ using Economy.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared.Dto;
+using Shared.Interfaces;
 using System.Net.Http;
 using System.Text.Json;
 
@@ -15,11 +16,13 @@ namespace Economy.Controllers
         private readonly EconomyDbContext _context;
         private HttpClient _projectApiClient;
         private string loggedInUserRole = "Admin";
+        private readonly IConverter<ProjectEco, ProjectEcoDto> taskConverter;
 
-        public ProjectEcoController(EconomyDbContext context, IHttpClientFactory httpClientFactory)
+        public ProjectEcoController(EconomyDbContext context, IHttpClientFactory httpClientFactory, IConverter<ProjectEco, ProjectEcoDto> converter)
         {
             _context = context;
             _projectApiClient = httpClientFactory.CreateClient("ProjectApi");
+            taskConverter = converter;
         }
 
         // GET: api/ProjectEco
@@ -61,33 +64,36 @@ namespace Economy.Controllers
 
         // GET: api/ProjectEco/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<ProjectEco>> GetProjectEco(Guid id)
+        public async Task<ActionResult<ProjectEcoDto>> GetProjectEco(Guid id)
         {
             var projectEco = await _context.ProjectEcos
-                .Include(p => p.Hours)
-                .Include(p => p.Material)
-                .FirstOrDefaultAsync(p => p.Id == id);
+               .Where(e => e.Id == id)
+               .Select(e => new ProjectEcoDto
+               {
+                   Id = e.Id // vælg relevante felter
+
+               })
+               .FirstOrDefaultAsync();
 
             if (projectEco == null)
             {
                 return NotFound();
             }
 
-            return projectEco;
+            return Ok(projectEco);
         }
 
         // POST: api/ProjectEco
         [HttpPost]
-        public async Task<ActionResult<ProjectEco>> PostProjectEco(ProjectEco projectEco)
+        public async Task<ActionResult<ProjectEco>> PostProjectEco(ProjectEcoDto projectEco)
         {
-            projectEco.Id = Guid.NewGuid();
-            projectEco.CreatedDate = DateTime.UtcNow;
-            projectEco.LastUpdated = DateTime.UtcNow;
+            // Convert dto to model
+            var convertedProjectEco = taskConverter.Convert(projectEco);
 
-            _context.ProjectEcos.Add(projectEco);
+            _context.ProjectEcos.Add(convertedProjectEco);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetProjectEco), new { id = projectEco.Id }, projectEco);
+            return Ok(convertedProjectEco);
         }
 
         // PUT: api/ProjectEco/{id}
@@ -126,7 +132,7 @@ namespace Economy.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProjectEco(Guid id)
         {
-            var projectEco = await _context.ProjectEcos.FindAsync(id);
+            var projectEco = await _context.ProjectEcos.FirstOrDefaultAsync(p => p.ProjectId == id);
             if (projectEco == null)
             {
                 return NotFound();

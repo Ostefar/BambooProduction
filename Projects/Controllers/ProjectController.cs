@@ -118,8 +118,6 @@ namespace Projects.Controllers
                 return BadRequest(ModelState);
             }
 
-            project.Id = Guid.NewGuid();
-
             var convertedProject = projectConverter.Convert(project);
 
             _context.Projects.Add(convertedProject);

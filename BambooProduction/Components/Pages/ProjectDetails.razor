@@ -123,7 +123,7 @@
             <div class="col-md-4">
                 <button type="submit" class="w-100 btn btn-lg btn-warning">Update</button>
                 <br>
-                <button type="button" class="w-100 btn btn-lg btn-danger" @onclick="() => DeleteCustomer()">Delete</button>
+                <button type="button" class="w-100 btn btn-lg btn-danger" @onclick="() => DeleteProject()">Delete</button>
                 <br>
                 <button type="button" class="w-100 btn btn-lg btn-info">Economy</button>
             </div>
@@ -147,12 +147,14 @@
     private Guid selectedEmployeeId;
 
     private HttpClient EmployeeApiClient;
+    private HttpClient EconomyApiClient;
 
 
     protected override async Task OnInitializedAsync()
     {
         ProjectApiClient = Http.CreateClient("ProjectApi");
         EmployeeApiClient = Http.CreateClient("EmployeeApi");
+        EconomyApiClient = Http.CreateClient("EconomyApi");
         await LoadProjectDetails();
         await LoadCustomers();
         await LoadEmployees();
@@ -261,7 +263,7 @@
         }
     }
 
-    private async Task DeleteCustomer()
+    private async Task DeleteProject()
     {
         var loggedInUserRole = await AuthService.GetUserRoleAsync();
 
@@ -270,8 +272,12 @@
             // Delete project from api
             var requestUrl = $"Project/{projectId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
             var response = await ProjectApiClient.DeleteAsync(requestUrl);
+
             if (response.IsSuccessStatusCode)
             {
+                // Delete projectEco from api
+                var requestUrlEco = $"ProjectEco/{projectId}";
+                var responseEco = await EconomyApiClient.DeleteAsync(requestUrlEco);
                 Navigation.NavigateTo("/projects");
             }
             else

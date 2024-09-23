@@ -34,5 +34,6 @@ namespace BambooProduction.Models.Project
         [Required]
         public Guid EmployeeId { get; set; }
 
+        public int FixedPriceAmount { get; set; }
     }
 }

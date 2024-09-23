@@ -27,5 +27,34 @@ namespace Economy.Data
 
         public DbSet<Hour> Hours { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<ProjectEco>()
+                .HasMany(p => p.Hours)
+                .WithOne(h => h.ProjectEco)
+                .HasForeignKey(h => h.ProjectEcoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ProjectEco>()
+                .HasMany(p => p.Material)
+                .WithOne(m => m.ProjectEco)
+                .HasForeignKey(m => m.ProjectEcoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<EmployeeEco>()
+               .HasMany(p => p.SickLeaves)
+               .WithOne(h => h.EmployeeEco)
+               .HasForeignKey(h => h.EmployeeEcoId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<EmployeeEco>()
+                .HasMany(p => p.VacationDays)
+                .WithOne(m => m.EmployeeEco)
+                .HasForeignKey(m => m.EmployeeEcoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
+
+        }
     }
 }
