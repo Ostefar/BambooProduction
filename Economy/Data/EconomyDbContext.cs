@@ -52,9 +52,6 @@ namespace Economy.Data
                 .WithOne(m => m.EmployeeEco)
                 .HasForeignKey(m => m.EmployeeEcoId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-
-
         }
     }
 }
