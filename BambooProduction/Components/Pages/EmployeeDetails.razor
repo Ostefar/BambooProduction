@@ -243,10 +243,8 @@ else
 
         if (employeeOnProjectResponse.IsSuccessStatusCode)
         {
-            // Read the content of the response as a string
             var content = await employeeOnProjectResponse.Content.ReadAsStringAsync();
 
-            // Convert the response content to a boolean (assuming API returns "true" or "false")
             bool employeeOnProject = bool.Parse(content);
 
             if (!employeeOnProject)

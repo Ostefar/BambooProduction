@@ -4,8 +4,10 @@
 @using BambooProduction.Service
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
+@using MudBlazor
 @using Shared.Dto
 @rendermode InteractiveServer
+@inject ISnackbar Snackbar
 @inject AuthService AuthService
 @inject UserManager<ApplicationUser> UserManager
 @inject NavigationManager Navigation
@@ -117,6 +119,12 @@
                 <button type="button" class="w-100 btn btn-lg btn-danger" @onclick="() => DeleteCustomer()">Delete</button>
             </div>
         </div>
+
+        <div class="row">
+            <div class="col-md-2">
+                <MudSnackbarProvider />
+            </div>
+        </div>
     </EditForm>
 }
 
@@ -214,18 +222,41 @@
 
     private async Task DeleteCustomer()
     {
-        // Delete customer from api
-        var requestUrl = $"Customer/{customerId}";
-        var response = await ProjectApiClient.DeleteAsync(requestUrl);
-        if (response.IsSuccessStatusCode)
+        var customerOnProjectResponse = await ProjectApiClient.GetAsync($"Project/customerOnProject/{customerId}");
+
+        if (customerOnProjectResponse.IsSuccessStatusCode)
         {
-            Navigation.NavigateTo("/customers");
+            var content = await customerOnProjectResponse.Content.ReadAsStringAsync();
+
+            bool customerOnProject = bool.Parse(content);
+
+            if (!customerOnProject)
+            {
+                // Delete customer from api
+                var requestUrl = $"Customer/{customerId}";
+                var response = await ProjectApiClient.DeleteAsync(requestUrl);
+                if (response.IsSuccessStatusCode)
+                {
+                    Navigation.NavigateTo("/customers");
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
+
+                }
+            }
+            else
+            {
+                // Customer is assigned to a project
+                Snackbar.Add("This customer is connected to a project, please reassign or finish the project.", Severity.Warning);
+            }
         }
         else
         {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
-
+            // Handle error response here if needed
+            var errorContent = await customerOnProjectResponse.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error: {customerOnProjectResponse.StatusCode}, Details: {errorContent}");
         }
     }
 }
