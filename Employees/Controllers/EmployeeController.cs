@@ -16,7 +16,6 @@ namespace Employees.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize(Roles = "Admin")]
     public class EmployeeController : ControllerBase
     {
         private readonly EmployeeDbContext _context;
@@ -30,38 +29,31 @@ namespace Employees.Controllers
 
         // GET: api/Employees
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetEmployees([FromQuery] String loggedInUserRole)
+        public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetEmployees()
         {
             List<EmployeeDto> employees;
 
-            if (loggedInUserRole == "Admin")
-            {
-                employees = await _context.Employees
-                  .Select(e => new EmployeeDto
-                  {
-                      Id = e.Id,
-                      FirstName = e.FirstName,
-                      LastName = e.LastName,
-                      Phone = e.Phone,
-                      Email = e.Email,
-                      LastUpdated = e.LastUpdated,
-                      LastUpdatedBy = e.LastUpdatedBy,
-                      Address = new AddressDto
-                      {
-                          City = e.Address.City,
-                          Country = e.Address.Country,
-                          LastUpdated = e.LastUpdated,
-                          LastUpdatedBy = e.LastUpdatedBy,
-                      }
-                  })
-                  .ToListAsync();
+            employees = await _context.Employees
+                .Select(e => new EmployeeDto
+                {
+                    Id = e.Id,
+                    FirstName = e.FirstName,
+                    LastName = e.LastName,
+                    Phone = e.Phone,
+                    Email = e.Email,
+                    LastUpdated = e.LastUpdated,
+                    LastUpdatedBy = e.LastUpdatedBy,
+                    Address = new AddressDto
+                    {
+                        City = e.Address.City,
+                        Country = e.Address.Country,
+                        LastUpdated = e.LastUpdated,
+                        LastUpdatedBy = e.LastUpdatedBy,
+                    }
+                })
+                .ToListAsync();
 
-                return Ok(employees);
-            }
-            else
-            {
-                return Unauthorized("You are not allowed to do this");
-            }
+            return Ok(employees);
         }
         // GET: api/Employee/names
         [HttpGet("names")]
@@ -81,44 +73,37 @@ namespace Employees.Controllers
 
         // GET: api/Employee/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<EmployeeDto>> GetEmployee(Guid id, [FromQuery] String loggedInUserRole)
+        public async Task<ActionResult<EmployeeDto>> GetEmployee(Guid id)
         {
             var employee = new EmployeeDto();
 
-            if (loggedInUserRole == "Admin")
+            employee = await _context.Employees
+            .Where(e => e.Id == id)
+            .Select(e => new EmployeeDto
             {
-                employee = await _context.Employees
-                .Where(e => e.Id == id)
-                .Select(e => new EmployeeDto
+                FirstName = e.FirstName,
+                LastName = e.LastName,
+                Phone = e.Phone,
+                Email = e.Email,
+                JobTitle = e.JobTitle,
+                UserId = e.UserId,
+                BirthDate = e.BirthDate,
+                HiringDate = e.HiringDate,
+                CreatedDate = e.CreatedDate,
+                LastUpdated = e.LastUpdated,
+                LastUpdatedBy = e.LastUpdatedBy,
+                Address = new AddressDto
                 {
-                    FirstName = e.FirstName,
-                    LastName = e.LastName,
-                    Phone = e.Phone,
-                    Email = e.Email,
-                    JobTitle = e.JobTitle,
-                    UserId = e.UserId,
-                    BirthDate = e.BirthDate,
-                    HiringDate = e.HiringDate,
+                    AddressLine = e.Address.AddressLine,
+                    City = e.Address.City,
+                    ZipCode = e.Address.ZipCode,
+                    Country = e.Address.Country,
                     CreatedDate = e.CreatedDate,
                     LastUpdated = e.LastUpdated,
                     LastUpdatedBy = e.LastUpdatedBy,
-                    Address = new AddressDto
-                    {
-                        AddressLine = e.Address.AddressLine,
-                        City = e.Address.City,
-                        ZipCode = e.Address.ZipCode,
-                        Country = e.Address.Country,
-                        CreatedDate = e.CreatedDate,
-                        LastUpdated = e.LastUpdated,
-                        LastUpdatedBy = e.LastUpdatedBy,
-                    }
-                })
-                .FirstOrDefaultAsync();
-            }
-            else
-            {
-                return Unauthorized("You are not allowed to do this");
-            }
+                }
+            })
+            .FirstOrDefaultAsync();
 
             if (employee == null)
             {
@@ -132,117 +117,95 @@ namespace Employees.Controllers
         [HttpPost]
         public async Task<ActionResult<Employee>> PostEmployee(EmployeeDto employee)
         {
-            if (employee.LoggedInUserRole == "Admin")
+            // er der nogle fields der skal krypteres?
+            if (!ModelState.IsValid)
             {
-                // er der nogle fields der skal krypteres?
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
-                if (employee.UserId == null)
-                {
-                    return Unauthorized();
-                }
-                employee.AddressId = Guid.NewGuid();
-
-                // Convert dto to model
-                var convertedEmployee = taskConverter.Convert(employee);
-
-                _context.Employees.Add(convertedEmployee);
-                await _context.SaveChangesAsync();
-
-                return Ok(employee);
+                return BadRequest(ModelState);
             }
-            else 
+
+            if (employee.UserId == null)
             {
-                return Unauthorized(employee.FirstName + " " + employee.LastName);
+                return Unauthorized();
             }
+            employee.AddressId = Guid.NewGuid();
+
+            // Convert dto to model
+            var convertedEmployee = taskConverter.Convert(employee);
+
+            _context.Employees.Add(convertedEmployee);
+            await _context.SaveChangesAsync();
+
+            return Ok(employee);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutEmployee(Guid id, EmployeeDto employee, [FromQuery] String loggedInUserRole)
+        public async Task<IActionResult> PutEmployee(Guid id, EmployeeDto employee)
         {
+            var existingEmployee = await _context.Employees
+                .Include(e => e.Address)
+                .FirstOrDefaultAsync(e => e.Id == id);
 
-            if (employee.LoggedInUserRole == "Admin")
+            if (existingEmployee == null)
             {
-                var existingEmployee = await _context.Employees
-                    .Include(e => e.Address)
-                    .FirstOrDefaultAsync(e => e.Id == id);
+                return NotFound();
+            }
 
-                if (existingEmployee == null)
+            // Update employee details
+            existingEmployee.FirstName = employee.FirstName;
+            existingEmployee.LastName = employee.LastName;
+            existingEmployee.Phone = employee.Phone;
+            existingEmployee.Email = employee.Email;
+            existingEmployee.JobTitle = employee.JobTitle;
+            existingEmployee.BirthDate = employee.BirthDate;
+            existingEmployee.HiringDate = employee.HiringDate;
+            existingEmployee.LastUpdated = DateTime.UtcNow;
+            existingEmployee.LastUpdatedBy = employee.LastUpdatedBy;
+
+            // Update address details
+            existingEmployee.Address.AddressLine = employee.Address.AddressLine;
+            existingEmployee.Address.City = employee.Address.City;
+            existingEmployee.Address.ZipCode = employee.Address.ZipCode;
+            existingEmployee.Address.Country = employee.Address.Country;
+            existingEmployee.Address.LastUpdated = DateTime.UtcNow;
+            existingEmployee.Address.LastUpdatedBy = employee.LastUpdatedBy;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!EmployeeExists(id))
                 {
                     return NotFound();
                 }
-
-                // Update employee details
-                existingEmployee.FirstName = employee.FirstName;
-                existingEmployee.LastName = employee.LastName;
-                existingEmployee.Phone = employee.Phone;
-                existingEmployee.Email = employee.Email;
-                existingEmployee.JobTitle = employee.JobTitle;
-                existingEmployee.BirthDate = employee.BirthDate;
-                existingEmployee.HiringDate = employee.HiringDate;
-                existingEmployee.LastUpdated = DateTime.UtcNow;
-                existingEmployee.LastUpdatedBy = employee.LastUpdatedBy;  
-
-                // Update address details
-                existingEmployee.Address.AddressLine = employee.Address.AddressLine;
-                existingEmployee.Address.City = employee.Address.City;
-                existingEmployee.Address.ZipCode = employee.Address.ZipCode;
-                existingEmployee.Address.Country = employee.Address.Country;
-                existingEmployee.Address.LastUpdated = DateTime.UtcNow;
-                existingEmployee.Address.LastUpdatedBy = employee.LastUpdatedBy;
-
-                try
+                else
                 {
-                    await _context.SaveChangesAsync();
+                    throw;
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!EmployeeExists(id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-
-                return Ok("Updated successfully");
-
             }
-            else
-            {
-                return Unauthorized(employee.FirstName + " " + employee.LastName);
-            }
+
+            return Ok("Updated successfully");
+
         }
 
         // DELETE: api/Employee/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteEmployee(Guid id, String loggedInUserRole)
+        public async Task<IActionResult> DeleteEmployee(Guid id)
         {
-            if (loggedInUserRole == "Admin")
+            var employee = await _context.Employees
+                .Include(e => e.Address)
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (employee == null)
             {
-                var employee = await _context.Employees
-                    .Include(e => e.Address)
-                    .FirstOrDefaultAsync(e => e.Id == id);
-
-                if (employee == null)
-                {
-                    return NotFound("User does not exist");
-                }
-
-                _context.Employees.Remove(employee);
-                await _context.SaveChangesAsync();
-
-                return NoContent();
+                return NotFound("User does not exist");
             }
-            else 
-            {
-                return Unauthorized("You are not allowed to do this");
-            }
+
+            _context.Employees.Remove(employee);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
 
         private bool EmployeeExists(Guid id)

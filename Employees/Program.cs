@@ -28,37 +28,6 @@ builder.Services.AddDbContext<EmployeeDbContext>(options =>
 builder.Services.AddSingleton<IConverter<Employee, EmployeeDto>, EmployeeConverter>();
 builder.Services.AddSingleton<IConverter<Address, AddressDto>, AddressConverter>();
 
-// Configure JWT authentication
-/*builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        var key = builder.Configuration["Jwt:Key"];
-        var issuer = builder.Configuration["Jwt:Issuer"];
-
-        if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(issuer))
-        {
-            throw new InvalidOperationException("JWT configuration settings are missing.");
-        }
-
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = issuer,
-            ValidAudience = issuer,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
-        };
-    });*/
-/*builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("AdminPolicy", policy =>
-    {
-        policy.RequireRole("Admin");
-    });
-});*/
-
 // Configure Swagger to use cookie authentication
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

@@ -152,29 +152,25 @@ else
 
     private async Task LoadEmployeeDetails()
     {
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
-        {
-            var requestUrl = $"Employee/{employeeId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            employee = await EmployeeApiClient.GetFromJsonAsync<EmployeeDto>(requestUrl);
+        var requestUrl = $"Employee/{employeeId}";
+        employee = await EmployeeApiClient.GetFromJsonAsync<EmployeeDto>(requestUrl);
 
-            // Copy data from employee to Input
-            if (employee != null)
-            {
-                Input.FirstName = employee.FirstName;
-                Input.LastName = employee.LastName;
-                Input.Phone = employee.Phone;
-                Input.Email = employee.Email;
-                Input.JobTitle = employee.JobTitle;
-                Input.BirthDate = employee.BirthDate;
-                Input.CreatedDate = employee.CreatedDate;
-                Input.LastUpdated = employee.LastUpdated;
-                Input.LastUpdatedBy = employee.LastUpdatedBy;
-                Input.AddressLine = employee.Address.AddressLine;
-                Input.City = employee.Address.City;
-                Input.ZipCode = employee.Address.ZipCode;
-                Input.Country = employee.Address.Country;
-            }
+        // Copy data from employee to Input
+        if (employee != null)
+        {
+            Input.FirstName = employee.FirstName;
+            Input.LastName = employee.LastName;
+            Input.Phone = employee.Phone;
+            Input.Email = employee.Email;
+            Input.JobTitle = employee.JobTitle;
+            Input.BirthDate = employee.BirthDate;
+            Input.CreatedDate = employee.CreatedDate;
+            Input.LastUpdated = employee.LastUpdated;
+            Input.LastUpdatedBy = employee.LastUpdatedBy;
+            Input.AddressLine = employee.Address.AddressLine;
+            Input.City = employee.Address.City;
+            Input.ZipCode = employee.Address.ZipCode;
+            Input.Country = employee.Address.Country;
         }
     }
 
@@ -190,100 +186,86 @@ else
             userEmail = await UserManager.GetEmailAsync(identityUser);
         }
 
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-        if (loggedInUserRole == "Admin")
-        {
-            var employeeUpdated = new EmployeeDto
+        var employeeUpdated = new EmployeeDto
+            {
+                FirstName = Input.FirstName,
+                LastName = Input.LastName,
+                Phone = Input.Phone,
+                Email = Input.Email,
+                JobTitle = Input.JobTitle,
+                BirthDate = Input.BirthDate,
+                HiringDate = Input.HiringDate,
+                CreatedDate = DateTime.Now,
+                LastUpdated = DateTime.Now,
+                LastUpdatedBy = userEmail,
+                Address = new AddressDto
                 {
-                    FirstName = Input.FirstName,
-                    LastName = Input.LastName,
-                    Phone = Input.Phone,
-                    Email = Input.Email,
-                    JobTitle = Input.JobTitle,
-                    BirthDate = Input.BirthDate,
-                    HiringDate = Input.HiringDate,
-                    LoggedInUserRole = loggedInUserRole,
-                    CreatedDate = DateTime.Now,
+                    AddressLine = Input.AddressLine,
+                    City = Input.City,
+                    ZipCode = Input.ZipCode,
+                    Country = Input.Country,
                     LastUpdated = DateTime.Now,
                     LastUpdatedBy = userEmail,
-                    Address = new AddressDto
-                    {
-                        AddressLine = Input.AddressLine,
-                        City = Input.City,
-                        ZipCode = Input.ZipCode,
-                        Country = Input.Country,
-                        LastUpdated = DateTime.Now,
-                        LastUpdatedBy = userEmail,
-                    }
-                };
-            var requestUrl = $"Employee/{employeeId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            try
-            {
-                var response = await EmployeeApiClient.PutAsJsonAsync(requestUrl, employeeUpdated);
-                if (response.IsSuccessStatusCode)
-                {
-                    Navigation.NavigateTo("/employees");
                 }
-                else
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception: {ex.Message}");
-            }
-        }
-    }
-
-    private async Task DeleteEmployee(String userId)
-    {
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-
-        if (loggedInUserRole == "Admin")
+            };
+        var requestUrl = $"Employee/{employeeId}";
+        try
         {
-            // Fetch the identity user using the userId
-            var identityUser = await UserManager.FindByIdAsync(userId.ToString());
-            if (identityUser != null)
-            {
-                // Delete the identity user
-                var deleteUserResult = await UserManager.DeleteAsync(identityUser);
-                if (!deleteUserResult.Succeeded)
-                {
-                    var errors = string.Join(", ", deleteUserResult.Errors.Select(e => e.Description));
-                    Console.WriteLine($"Error deleting identity user: {errors}");
-
-                    return;
-                }
-            }
-            else
-            {
-                Console.WriteLine("Identity user not found.");
-                return;
-            }
-
-            // Delete employee from api
-            var requestUrl = $"Employee/{employeeId}?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
-            var response = await EmployeeApiClient.DeleteAsync(requestUrl);
+            var response = await EmployeeApiClient.PutAsJsonAsync(requestUrl, employeeUpdated);
             if (response.IsSuccessStatusCode)
             {
-                // Delete employeeEco from api
-                var requestUrlEco = $"EmployeeEco/{employeeId}";
-                var responseEco = await EconomyApiClient.DeleteAsync(requestUrlEco);
-
                 Navigation.NavigateTo("/employees");
             }
             else
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
+    }
 
+    private async Task DeleteEmployee(String userId)
+    {
+        // Fetch the identity user using the userId
+        var identityUser = await UserManager.FindByIdAsync(userId.ToString());
+        if (identityUser != null)
+        {
+            // Delete the identity user
+            var deleteUserResult = await UserManager.DeleteAsync(identityUser);
+            if (!deleteUserResult.Succeeded)
+            {
+                var errors = string.Join(", ", deleteUserResult.Errors.Select(e => e.Description));
+                Console.WriteLine($"Error deleting identity user: {errors}");
+
+                return;
             }
         }
         else
         {
-            Console.WriteLine("Unauthorized: Admin role required.");
+            Console.WriteLine("Identity user not found.");
+            return;
         }
+
+        // Delete employee from api
+        var requestUrl = $"Employee/{employeeId}";
+        var response = await EmployeeApiClient.DeleteAsync(requestUrl);
+        if (response.IsSuccessStatusCode)
+        {
+            // Delete employeeEco from api
+            var requestUrlEco = $"EmployeeEco/{employeeId}";
+            var responseEco = await EconomyApiClient.DeleteAsync(requestUrlEco);
+
+            Navigation.NavigateTo("/employees");
+        }
+        else
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
+
+        }        
     }
 }

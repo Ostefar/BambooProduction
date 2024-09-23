@@ -73,13 +73,9 @@
 
     private async Task LoadEmployees()
     {
-        var loggedInUserRole = await AuthService.GetUserRoleAsync();
-        if (loggedInUserRole == "Admin" || loggedInUserRole == "Employee")
-        {
-            var requestUrl = $"Employee?loggedInUserRole={Uri.EscapeDataString(loggedInUserRole)}";
+            var requestUrl = $"Employee";
             employees = await EmployeeApiClient.GetFromJsonAsync<List<EmployeeDto>>(requestUrl);
             filteredEmployees = employees;
-        }
     }
 
     private void SearchEmployees()
