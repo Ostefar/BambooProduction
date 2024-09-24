@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared.Dto;
 using Shared.Interfaces;
+using System;
 using System.Linq;
 
 namespace Economy.Controllers
@@ -112,8 +113,8 @@ namespace Economy.Controllers
 
 
             // Recalculate SickDaysTotal and VacationDaysTotal
-            employeeEco.SickDaysTotal = CalculateSickDaysTotal(employeeEco.SickLeaves);
-            employeeEco.VacationDaysTotal = CalculateVacationDaysTotal(employeeEco.VacationDays);
+            //employeeEco.SickDaysTotal = CalculateSickDaysTotal(employeeEco.SickLeaves);
+            //employeeEco.VacationDaysTotal = CalculateVacationDaysTotal(employeeEco.VacationDays);
 
             _context.Entry(employeeEco).State = EntityState.Modified;
 
@@ -173,12 +174,7 @@ namespace Economy.Controllers
 
             _context.SickLeaves.Add(convertedSickLeave);
 
-            /*var updatedSickDays = new EmployeeEco
-            {
-                SickDaysTotal = 1
-            };
-
-            _context.EmployeeEcos.Add(updatedSickDays);*/
+            employeeEco.SickDaysTotal = CalculateDaysBetween(sickLeave.StartDate, sickLeave.EndDate);
 
             await _context.SaveChangesAsync();
 
@@ -203,28 +199,20 @@ namespace Economy.Controllers
                 EndDate = vacation.EndDate
             };
 
-            employeeEco.VacationDays.Add(convertedVacation);
+            _context.Vacations.Add(convertedVacation);
 
             // Update vacation days total
-            employeeEco.VacationDaysTotal = CalculateVacationDaysTotal(employeeEco.VacationDays);
+            employeeEco.VacationDaysTotal = CalculateDaysBetween(vacation.StartDate, vacation.EndDate);
 
             await _context.SaveChangesAsync();
 
-            return Ok(vacation);
+            return Ok();
         }
 
-        // Helper function to calculate total sick days
-        private int CalculateSickDaysTotal(ICollection<SickLeave> sickLeaves)
+        // Helper function to calculate total days between two dates, including both start and end dates
+        private int CalculateDaysBetween(DateTime startDate, DateTime endDate)
         {
-            return sickLeaves.Sum(s => (s.EndDate.HasValue
-                ? (s.EndDate.Value - s.StartDate).Days + 1
-                : (DateTime.Now - s.StartDate).Days + 1));
-        }
-
-        // Helper function to calculate total vacation days
-        private int CalculateVacationDaysTotal(ICollection<Vacation> vacations)
-        {
-            return vacations.Sum(v => (v.EndDate - v.StartDate).Days + 1);
+            return (endDate - startDate).Days + 1;
         }
 
         private bool EmployeeEcoExists(Guid id)
