@@ -25,9 +25,7 @@
         <ValidationSummary class="text-danger" role="alert" />
 
         <div class="row">
-            <!-- Main form on the left -->
             <div class="col-md-2">
-                <!-- Main Form Fields -->
                 <div class="form-floating mb-3">
                     <select @bind="selectedEmployeeId" class="form-control" disabled>
                         <option value="">Select a employee</option>
@@ -36,7 +34,7 @@
                             <option value="@employee.Id">@employee.FirstName @employee.LastName</option>
                         }
                     </select>
-                    <label for="customerId">Assigned employee</label>
+                    <label for="employeeId">Assigned employee</label>
                     <ValidationMessage For="() => selectedEmployeeId" class="text-danger" />
                 </div>
 
@@ -98,7 +96,7 @@
                         <ValidationMessage For="() => InputEmployeeVacSick.EndDate" class="text-danger" />
                     </div>
 
-                    <button type="button" class="w-100 btn btn-lg btn-success mb-3" @onclick="SubmitVacationForm">Submit Vacation</button>
+                    <button type="button" class="w-100 btn btn-lg btn-success mb-3" @onclick="SubmitVacationForm">Submit vacation</button>
                 }
 
                 <!-- Sickness Form - Conditionally rendered -->
@@ -122,7 +120,7 @@
                         <ValidationMessage For="() => InputEmployeeVacSick.Reason" class="text-danger" />
                     </div>
 
-                    <button type="button" class="w-100 btn btn-lg btn-success" @onclick="SubmitSicknessForm">Submit Sickness</button>
+                    <button type="button" class="w-100 btn btn-lg btn-success" @onclick="SubmitSicknessForm">Submit sickness</button>
                 }
             </div>
         </div>
@@ -153,6 +151,7 @@ else
     private EmployeeEcoDto employeeEco;
     private HttpClient EconomyApiClient;
     private HttpClient EmployeeApiClient;
+    private String userEmail = "Not found";
 
     private bool showVacationForm = false;
     private bool showSicknessForm = false;
@@ -168,6 +167,18 @@ else
         EconomyApiClient = Http.CreateClient("EconomyApi");
         await LoadEmployeeEcoDetails();
         await LoadEmployees();
+        await GetUserEmail();
+    }
+
+    private async Task GetUserEmail()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var identityUser = await UserManager.GetUserAsync(user);
+        if (identityUser != null)
+        {
+            userEmail = await UserManager.GetEmailAsync(identityUser);
+        }
     }
 
     private void ToggleVacationForm()
@@ -187,9 +198,10 @@ else
         var vacation = new VacationDto
         {
             Id = Guid.NewGuid(),
-                EmployeeEcoId = employeeEcoId,
+            EmployeeEcoId = employeeEcoId,
             StartDate = InputEmployeeVacSick.StartDate,
-            EndDate = InputEmployeeVacSick.EndDate
+            EndDate = InputEmployeeVacSick.EndDate,
+            UserEmail = userEmail
         };
 
         // API call to update vacation days
@@ -218,7 +230,8 @@ else
                 EmployeeEcoId = employeeEcoId,
                 StartDate = InputEmployeeVacSick.StartDate,
                 EndDate = InputEmployeeVacSick.EndDate,
-                Reason = InputEmployeeVacSick.Reason
+                Reason = InputEmployeeVacSick.Reason,
+                UserEmail = userEmail
             };
 
         // API call to update sickleaves
@@ -266,22 +279,9 @@ else
 
     private async Task UpdateEmployeeEco()
     {
-         var userEmail = "";
-
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        var identityUser = await UserManager.GetUserAsync(user);
-        if (identityUser != null)
-        {
-            userEmail = await UserManager.GetEmailAsync(identityUser);
-        }
-
         var employeeEcoUpdated = new EmployeeEcoDto
             {
-                EmployeeId = employeeEcoId,
                 HourlyWage = Input.HourlyWage,
-                SickDaysTotal = Input.SickDaysTotal,
-                VacationDaysTotal = Input.VacationDaysTotal,
                 CreatedDate = DateTime.Now,
                 LastUpdated = DateTime.Now,
                 LastUpdatedBy = userEmail
@@ -292,7 +292,7 @@ else
             var response = await EconomyApiClient.PutAsJsonAsync(requestUrl, employeeEcoUpdated);
             if (response.IsSuccessStatusCode)
             {
-                Navigation.NavigateTo("/");  // where to?
+                Navigation.NavigateTo($"/Economy-employee-details/{employeeEcoId}"); 
             }
             else
             {

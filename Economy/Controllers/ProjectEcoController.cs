@@ -15,7 +15,6 @@ namespace Economy.Controllers
     {
         private readonly EconomyDbContext _context;
         private HttpClient _projectApiClient;
-        private string loggedInUserRole = "Admin";
         private readonly IConverter<ProjectEco, ProjectEcoDto> taskConverter;
 
         public ProjectEcoController(EconomyDbContext context, IHttpClientFactory httpClientFactory, IConverter<ProjectEco, ProjectEcoDto> converter)
@@ -64,8 +63,15 @@ namespace Economy.Controllers
                .Where(e => e.Id == id)
                .Select(e => new ProjectEcoDto
                {
-                   Id = e.Id // vælg relevante felter
-
+                   Id = e.Id, // vælg relevante felter
+                   ProjectId = e.ProjectId,
+                   TotalCost = e.TotalCost,
+                   FixedPrice = e.FixedPrice,
+                   HoursTotal = e.HoursTotal,
+                   MaterialsPriceTotal = e.MaterialsPriceTotal,
+                   CreatedDate = e.CreatedDate,
+                   LastUpdated = e.LastUpdated,
+                   LastUpdatedBy = e.LastUpdatedBy
                })
                .FirstOrDefaultAsync();
 
@@ -140,40 +146,87 @@ namespace Economy.Controllers
 
         // Add Hour to ProjectEco
         [HttpPost("{id}/addHour")]
-        public async Task<IActionResult> AddHourToProject(Guid id, Hour hour)
+        public async Task<IActionResult> AddHourToProject(Guid id, HourDto hour)
         {
-            var projectEco = await _context.ProjectEcos.FindAsync(id);
+            var projectEco = await _context.ProjectEcos.Include(p => p.Hours).FirstOrDefaultAsync(p => p.Id == id);
             if (projectEco == null)
             {
                 return NotFound();
             }
 
-            hour.Id = Guid.NewGuid();
-            hour.ProjectEcoId = id;
-            projectEco.Hours.Add(hour);
+            var convertedHour = new Hour
+            {
+                Id = hour.Id,
+                ProjectEcoId = hour.ProjectEcoId,
+                RegistrationDate = hour.RegistrationDate,
+                HoursUsed = hour.HoursUsed,
+                Comment = hour.Comment
+            };
+
+            _context.Hours.Add(convertedHour);
+
+            projectEco.HoursTotal += hour.HoursUsed;
+            projectEco.LastUpdated = DateTime.Today;
+            projectEco.LastUpdatedBy = hour.UserEmail;
 
             await _context.SaveChangesAsync();
 
-            return Ok(hour);
+            return Ok();
         }
 
         // Add Material to ProjectEco
         [HttpPost("{id}/addMaterial")]
-        public async Task<IActionResult> AddMaterialToProject(Guid id, Material material)
+        public async Task<IActionResult> AddMaterialToProject(Guid id, MaterialDto material)
         {
-            var projectEco = await _context.ProjectEcos.FindAsync(id);
+            var projectEco = await _context.ProjectEcos.Include(p => p.Material).FirstOrDefaultAsync(p => p.Id == id);
             if (projectEco == null)
             {
                 return NotFound();
             }
 
-            material.Id = Guid.NewGuid();
-            material.ProjectEcoId = id;
-            projectEco.Material.Add(material);
+            var convertedMaterial = new Material
+            {
+                Id = material.Id,
+                ProjectEcoId = material.ProjectEcoId,
+                MaterialType = material.MaterialType,
+                Price = material.Price,
+            };
+
+            _context.Materials.Add(convertedMaterial);
+
+            projectEco.MaterialsPriceTotal += int.Parse(material.Price);
+            projectEco.LastUpdated = DateTime.Today;
+            projectEco.LastUpdatedBy = material.UserEmail;
 
             await _context.SaveChangesAsync();
 
-            return Ok(material);
+            return Ok();
+        }
+
+        // Update total cost
+        [HttpPost("{id}/updateTotalCost")]
+        public async Task<IActionResult> UpdateTotalCost(Guid id)
+        {
+            var projectEco = await _context.ProjectEcos.Include(p => p.Hours).FirstOrDefaultAsync(p => p.Id == id);
+            if (projectEco == null)
+            {
+                return NotFound();
+            }
+
+            var projectId = projectEco.ProjectId;
+
+            // var projects = ; kald api med project id
+
+            // var employeeId = projects.EmployeeId;
+
+            // var employees = ; kald api (employeeEco data vi skal have)
+
+            //projectEco.TotalCost = (projectEco.HoursTotal * employees.HourlyWage) + projectEco.MaterialsPriceTotal;
+
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
         }
 
         private bool ProjectEcoExists(Guid id)

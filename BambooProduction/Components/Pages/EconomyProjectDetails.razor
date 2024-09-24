@@ -1,15 +1,323 @@
-﻿@page "/Economy-project-details"
+﻿@page "/Economy-project-details/{projectEcoId:guid}"
+@using BambooProduction.Data
+@using BambooProduction.Models.ProjectEco
 @using BambooProduction.Service
 @using Microsoft.AspNetCore.Authorization
-
+@using Microsoft.AspNetCore.Identity
+@using MudBlazor
+@using Shared.Dto
 @rendermode InteractiveServer
 @inject AuthService AuthService
 @inject IHttpClientFactory Http
 @inject NavigationManager Navigation
-@attribute [Authorize(Roles = "Admin, Employee")]
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize(Roles = "Admin")]
 
-<h3>EconomyProjectDetails</h3>
+<h3>Project economy details</h3>
+
+<hr />
+
+@if (projectEco != null)
+{
+    <EditForm Model="Input" method="put" OnValidSubmit="UpdateProjectEco" FormName="UpdateProjectEco">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" role="alert" />
+
+        <div class="row">
+            <div class="col-md-2">
+                <div class="form-floating mb-3">
+                    <select @bind="selectedProjectId" class="form-control" disabled>
+                        <option value="">Select a project</option>
+                        @foreach (var project in projects)
+                        {
+                            <option value="@project.Id">@project.ProjectName</option>
+                        }
+                    </select>
+                    <label for="projectName">Project name</label>
+                    <ValidationMessage For="() => selectedProjectId" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputNumber @bind-Value="Input.TotalCost" class="form-control" placeholder="TotalCost" disabled />
+                    <label for="totalCost">Total cost</label>
+                    <ValidationMessage For="() => Input.TotalCost" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputNumber @bind-Value="Input.FixedPrice" class="form-control" placeholder="FixedPrice" disabled />
+                    <label for="fixedPrice">Fixed price</label>
+                    <ValidationMessage For="() => Input.FixedPrice" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputNumber @bind-Value="Input.HoursTotal" class="form-control" placeholder="HoursTotal" disabled />
+                    <label for="hoursTotal">Hours total</label>
+                    <ValidationMessage For="() => Input.HoursTotal" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputNumber @bind-Value="Input.MaterialsPriceTotal" class="form-control" placeholder="MaterialsPriceTotal" disabled />
+                    <label for="materialsPriceTotal">Cost of materials</label>
+                    <ValidationMessage For="() => Input.MaterialsPriceTotal" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputDate @bind-Value="Input.CreatedDate" class="form-control" placeholder="Creation date" min="1900-01-01" max="2100-12-31" disabled />
+                    <label for="createdDate">Creation date</label>
+                    <ValidationMessage For="() => Input.CreatedDate" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputDate @bind-Value="Input.LastUpdated" class="form-control" placeholder="Last updated" min="1900-01-01" max="2100-12-31" disabled />
+                    <label for="lastUpdated">Last updated</label>
+                    <ValidationMessage For="() => Input.LastUpdated" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.LastUpdatedBy" class="form-control" placeholder="Last updated by" disabled />
+                    <label for="lastUpdatedBy">Last updated by</label>
+                    <ValidationMessage For="() => Input.LastUpdatedBy" class="text-danger" />
+                </div>
+
+                <!-- Buttons to show conditional forms -->
+                <button type="button" class="w-100 btn btn-lg btn-primary mb-3" @onclick="ToggleHoursForm">Registrate hours</button>
+                <button type="button" class="w-100 btn btn-lg btn-primary" @onclick="ToggleMaterialsForm">Registrate materials</button>
+            </div>
+
+            <!-- Conditional forms on the right -->
+            <div class="col-md-2">
+                <!-- Hours Form - Conditionally rendered -->
+                @if (showHoursForm)
+                {
+                    <div class="form-floating mb-3">
+                        <InputDate @bind-Value="InputHour.RegistrationDate" class="form-control" placeholder="RegistrationDate" min="1900-01-01" max="2100-12-31" />
+                        <label for="registrationDate">Registration date</label>
+                        <ValidationMessage For="() => InputHour.RegistrationDate" class="text-danger" />
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <InputNumber @bind-Value="InputHour.HoursUsed" class="form-control" placeholder="HoursUsed" />
+                        <label for="HoursUsed">Hours to registrate</label>
+                        <ValidationMessage For="() => InputHour.HoursUsed" class="text-danger" />
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="InputHour.Comment" class="form-control" placeholder="Comment" />
+                        <label for="comment">Comment</label>
+                        <ValidationMessage For="() => InputHour.Comment" class="text-danger" />
+                    </div>
+
+                    <button type="button" class="w-100 btn btn-lg btn-success mb-3" @onclick="SubmitHoursForm">Submit hours</button>
+                }
+
+                <!-- Materials Form - Conditionally rendered -->
+                @if (showMaterialsForm)
+                {
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="InputMaterial.MaterialType" class="form-control" placeholder="MaterialType" />
+                        <label for="materialType">Material type</label>
+                        <ValidationMessage For="() => InputMaterial.MaterialType" class="text-danger" />
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="InputMaterial.Price" class="form-control" placeholder="Price" />
+                        <label for="price">Price</label>
+                        <ValidationMessage For="() => InputMaterial.Price" class="text-danger" />
+                    </div>
+
+                    <button type="button" class="w-100 btn btn-lg btn-success" @onclick="SubmitMaterialsForm">Submit material</button>
+                }
+            </div>
+        </div>
+
+        <!-- Update Button -->
+        <div class="row mt-3">
+            <div class="col-md-2">
+                <button type="submit" class="w-100 btn btn-lg btn-warning">Update</button>
+            </div>
+
+            <div class="col-md-6">
+                <MudSnackbarProvider />
+            </div>
+        </div>
+    </EditForm>
+}
+else
+{
+    <p>Loading...</p>
+}
 
 @code {
 
+    [Parameter]
+    public Guid projectEcoId { get; set; }
+    [SupplyParameterFromForm]
+    private UpdateModel Input { get; set; } = new();
+    private ProjectEcoDto projectEco;
+    private HttpClient EconomyApiClient;
+    private HttpClient ProjectApiClient;
+
+    private bool showHoursForm = false;
+    private bool showMaterialsForm = false;
+
+    private InputHours InputHour = new InputHours();
+    private InputMaterials InputMaterial = new InputMaterials();
+
+    private List<ProjectDto> projects = new();
+    private Guid selectedProjectId;
+    private String userEmail = "Not found";
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProjectApiClient = Http.CreateClient("ProjectApi");
+        EconomyApiClient = Http.CreateClient("EconomyApi");
+        await LoadProjectEcoDetails();
+        await LoadProjects();
+        await GetUserEmail();
+        //await CheckTotalCost();
+    }
+
+    private void ToggleHoursForm()
+    {
+        showHoursForm = !showHoursForm;
+        showMaterialsForm = false;
+    }
+
+    private void ToggleMaterialsForm()
+    {
+        showMaterialsForm = !showMaterialsForm;
+        showHoursForm = false;
+    }
+
+    private async Task SubmitHoursForm()
+    {
+        var hours = new HourDto
+            {
+                Id = Guid.NewGuid(),
+                ProjectEcoId = projectEcoId,
+                RegistrationDate = InputHour.RegistrationDate,
+                HoursUsed = InputHour.HoursUsed,
+                Comment = InputHour.Comment,
+                UserEmail = userEmail
+            };
+
+        // API call to update hours used
+        var response = await EconomyApiClient.PostAsJsonAsync($"ProjectEco/{projectEcoId}/addHour", hours);
+
+        if (response.IsSuccessStatusCode)
+        {
+            showHoursForm = false;
+            await LoadProjectEcoDetails(); // Reload updated employee economy data
+            Console.WriteLine("Hours registrated successfully.");
+        }
+        else
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Failed to submit hours: {errorContent}");
+        }
+    }
+
+    // Handle materials form submission
+    private async Task SubmitMaterialsForm()
+    {
+        var materials = new MaterialDto
+            {
+                Id = Guid.NewGuid(),
+                ProjectEcoId = projectEcoId,
+                MaterialType = InputMaterial.MaterialType,
+                Price = InputMaterial.Price
+            };
+
+        // API call to update materials
+        var response = await EconomyApiClient.PostAsJsonAsync($"ProjectEco/{projectEcoId}/addMaterial", materials);
+
+        if (response.IsSuccessStatusCode)
+        {
+            showMaterialsForm = false;
+            await LoadProjectEcoDetails();
+            Console.WriteLine("Materials added successfully.");
+        }
+        else
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Failed to submit materials: {errorContent}");
+        }
+    }
+
+    private async Task GetUserEmail()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var identityUser = await UserManager.GetUserAsync(user);
+        if (identityUser != null)
+        {
+            userEmail = await UserManager.GetEmailAsync(identityUser);
+        }
+    }
+
+    private async Task CheckTotalCost()
+    {
+        var response = await EconomyApiClient.PostAsync($"ProjectEco/{projectEcoId}/updateTotalCost", null);
+    }
+
+    private async Task LoadProjects()
+    {
+        var requestUrl = $"Project";
+        projects = await ProjectApiClient.GetFromJsonAsync<List<ProjectDto>>(requestUrl);
+    }
+
+    private async Task LoadProjectEcoDetails()
+    {
+        var requestUrl = $"ProjectEco/{projectEcoId}";
+        projectEco = await EconomyApiClient.GetFromJsonAsync<ProjectEcoDto>(requestUrl);
+
+        // Copy data from projectEco to Input
+        if (projectEco != null)
+        {
+            Input.ProjectId = projectEco.ProjectId; 
+            Input.TotalCost = projectEco.TotalCost;
+            Input.FixedPrice = projectEco.FixedPrice;
+            Input.HoursTotal = projectEco.HoursTotal;
+            Input.MaterialsPriceTotal = projectEco.MaterialsPriceTotal;
+            Input.CreatedDate = projectEco.CreatedDate;
+            Input.LastUpdated = projectEco.LastUpdated;
+            Input.LastUpdatedBy = projectEco.LastUpdatedBy;
+
+            selectedProjectId = projectEco.ProjectId;
+        }
+    }
+
+    private async Task UpdateProjectEco()
+    {
+        var projectEcoUpdated = new ProjectEcoDto
+            {
+                ProjectId = projectEcoId,
+                TotalCost = Input.TotalCost,
+                FixedPrice = Input.FixedPrice,
+                HoursTotal = Input.HoursTotal,
+                MaterialsPriceTotal = Input.MaterialsPriceTotal,
+                CreatedDate = DateTime.Now,
+                LastUpdated = DateTime.Now,
+                LastUpdatedBy = userEmail
+            };
+        var requestUrl = $"ProjectEco/{projectEcoId}";
+        try
+        {
+            var response = await EconomyApiClient.PutAsJsonAsync(requestUrl, projectEcoUpdated);
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo($"/Economy-project-details/{projectEcoId}"); 
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error: {response.StatusCode}, Details: {errorContent}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
+    }
 }

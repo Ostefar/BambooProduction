@@ -174,7 +174,10 @@ namespace Economy.Controllers
 
             _context.SickLeaves.Add(convertedSickLeave);
 
-            employeeEco.SickDaysTotal = CalculateDaysBetween(sickLeave.StartDate, sickLeave.EndDate);
+            var daysToAdd = CalculateDaysBetween(sickLeave.StartDate, sickLeave.EndDate);
+            employeeEco.SickDaysTotal += daysToAdd;
+            employeeEco.LastUpdated = DateTime.Today;
+            employeeEco.LastUpdatedBy = sickLeave.UserEmail;
 
             await _context.SaveChangesAsync();
 
@@ -202,7 +205,11 @@ namespace Economy.Controllers
             _context.Vacations.Add(convertedVacation);
 
             // Update vacation days total
-            employeeEco.VacationDaysTotal = CalculateDaysBetween(vacation.StartDate, vacation.EndDate);
+            var daysToAdd = CalculateDaysBetween(vacation.StartDate, vacation.EndDate);
+
+            employeeEco.VacationDaysTotal += daysToAdd;
+            employeeEco.LastUpdated = DateTime.Today;
+            employeeEco.LastUpdatedBy = vacation.UserEmail;
 
             await _context.SaveChangesAsync();
 

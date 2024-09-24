@@ -15,5 +15,7 @@ namespace Shared.Dto
         public Guid ProjectEcoId { get; set; }
 
         public ProjectEcoDto ProjectEco { get; set; }
+
+        public string UserEmail { get; set; }
     }
 }

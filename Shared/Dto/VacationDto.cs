@@ -15,5 +15,7 @@ namespace Shared.Dto
         public Guid EmployeeEcoId { get; set; }
 
         public EmployeeEcoDto EmployeeEco { get; set; }
+
+        public string UserEmail { get; set; }
     }
 }
