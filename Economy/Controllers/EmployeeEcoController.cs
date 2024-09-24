@@ -61,7 +61,14 @@ namespace Economy.Controllers
                 .Where(e => e.Id == id)
                 .Select(e => new EmployeeEcoDto
                 {
-                    Id = e.Id // vælg relevante felter
+                    Id = e.Id,
+                    EmployeeId = e.EmployeeId,
+                    HourlyWage = e.HourlyWage,
+                    SickDaysTotal = e.SickDaysTotal,
+                    VacationDaysTotal = e.VacationDaysTotal,
+                    CreatedDate = e.CreatedDate,
+                    LastUpdated = e.LastUpdated,
+                    LastUpdatedBy = e.LastUpdatedBy
 
                 })
                 .FirstOrDefaultAsync();
@@ -91,12 +98,18 @@ namespace Economy.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutEmployeeEco(Guid id, EmployeeEco employeeEco)
         {
+            var existingEmployeeEco = await _context.EmployeeEcos.FirstOrDefaultAsync(e => e.Id == id);
+
             if (id != employeeEco.Id)
             {
                 return BadRequest();
             }
 
-            employeeEco.LastUpdated = DateTime.UtcNow;
+            // Update employeeEco details
+            existingEmployeeEco.HourlyWage = employeeEco.HourlyWage;
+            existingEmployeeEco.LastUpdated = DateTime.UtcNow;
+            existingEmployeeEco.LastUpdatedBy = employeeEco.LastUpdatedBy;
+
 
             // Recalculate SickDaysTotal and VacationDaysTotal
             employeeEco.SickDaysTotal = CalculateSickDaysTotal(employeeEco.SickLeaves);
@@ -141,29 +154,40 @@ namespace Economy.Controllers
 
         // POST: api/EmployeeEco/{id}/addSickLeave
         [HttpPost("{id}/addSickLeave")]
-        public async Task<IActionResult> AddSickLeave(Guid id, SickLeave sickLeave)
+        public async Task<IActionResult> AddSickLeave(Guid id, SickLeaveDto sickLeave)
         {
-            var employeeEco = await _context.EmployeeEcos.FindAsync(id);
+            var employeeEco = await _context.EmployeeEcos.Include(e => e.SickLeaves).FirstOrDefaultAsync(e => e.Id == id);
             if (employeeEco == null)
             {
                 return NotFound();
             }
 
-            sickLeave.Id = Guid.NewGuid();
-            sickLeave.EmployeeEcoId = id;
-            employeeEco.SickLeaves.Add(sickLeave);
+            var convertedSickLeave = new SickLeave
+            {
+                Id = sickLeave.Id,
+                EmployeeEcoId = sickLeave.EmployeeEcoId,
+                StartDate = sickLeave.StartDate,
+                EndDate = sickLeave.EndDate,
+                Reason = sickLeave.Reason
+            };
 
-            // Update sick days total
-            employeeEco.SickDaysTotal = CalculateSickDaysTotal(employeeEco.SickLeaves);
+            _context.SickLeaves.Add(convertedSickLeave);
+
+            /*var updatedSickDays = new EmployeeEco
+            {
+                SickDaysTotal = 1
+            };
+
+            _context.EmployeeEcos.Add(updatedSickDays);*/
 
             await _context.SaveChangesAsync();
 
-            return Ok(sickLeave);
+            return Ok();
         }
 
         // POST: api/EmployeeEco/{id}/addVacation
         [HttpPost("{id}/addVacation")]
-        public async Task<IActionResult> AddVacation(Guid id, Vacation vacation)
+        public async Task<IActionResult> AddVacation(Guid id, VacationDto vacation)
         {
             var employeeEco = await _context.EmployeeEcos.FindAsync(id);
             if (employeeEco == null)
@@ -171,9 +195,15 @@ namespace Economy.Controllers
                 return NotFound();
             }
 
-            vacation.Id = Guid.NewGuid();
-            vacation.EmployeeEcoId = id;
-            employeeEco.VacationDays.Add(vacation);
+            var convertedVacation = new Vacation
+            {
+                Id = vacation.Id,
+                EmployeeEcoId = vacation.EmployeeEcoId,
+                StartDate = vacation.StartDate,
+                EndDate = vacation.EndDate
+            };
+
+            employeeEco.VacationDays.Add(convertedVacation);
 
             // Update vacation days total
             employeeEco.VacationDaysTotal = CalculateVacationDaysTotal(employeeEco.VacationDays);
