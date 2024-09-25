@@ -29,36 +29,10 @@ builder.Services.AddHttpClient("EmployeeApi", client =>
     client.BaseAddress = new Uri("https://localhost:7056/api/"); // skal ændres til docker url
 });
 
-// Configure JWT authentication
-/*builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        var key = builder.Configuration["Jwt:Key"];
-        var issuer = builder.Configuration["Jwt:Issuer"];
-
-        if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(issuer))
-        {
-            throw new InvalidOperationException("JWT configuration settings are missing.");
-        }
-
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = issuer,
-            ValidAudience = issuer,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
-        };
-    });*/
-/*builder.Services.AddAuthorization(options =>
+builder.Services.AddHttpClient("EconomyApi", client =>
 {
-    options.AddPolicy("AdminPolicy", policy =>
-    {
-        policy.RequireRole("Admin");
-    });
-});*/
+    client.BaseAddress = new Uri("https://localhost:7225/api/"); // skal ændres til docker url
+});
 
 // Add services to the container.
 

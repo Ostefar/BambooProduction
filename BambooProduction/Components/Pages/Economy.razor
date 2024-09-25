@@ -12,7 +12,7 @@
     <div class="col-md-6">
     <h2>Project</h2>
     <div class="input-group mb-3">
-        <input type="text" class="form-control" @bind="Input.searchTerm" placeholder="Search by project name" />
+        <input type="text" class="form-control" @bind="InputProjectEco.searchTerm" placeholder="Search by project name" />
             <button class="btn btn-primary" @onclick="() => Search(1)">Search</button>
             <button class="btn btn-success ms-2" @onclick="() => Create(1)">+</button>
     </div>
@@ -57,7 +57,7 @@
     <div class="col-md-6">
         <h2>Employee</h2>
         <div class="input-group mb-3">
-            <input type="text" class="form-control" @bind="Input.searchTerm" placeholder="Search by employee name" />
+            <input type="text" class="form-control" @bind="InputEmployeeEco.searchTerm" placeholder="Search by employee name" />
             <button class="btn btn-primary" @onclick="() => Search(2)">Search</button>
             <button class="btn btn-success ms-2" @onclick="() => Create(2)">+</button>
         </div>
@@ -102,7 +102,8 @@
 @code {
     private List<ProjectEcoDto> projectEcos = new();
     private List<ProjectEcoDto> filteredProjectEcos = new();
-    private InputModel Input { get; set; } = new();
+    private InputModel InputProjectEco { get; set; } = new();
+    private InputModel InputEmployeeEco { get; set; } = new();
 
     private List<EmployeeEcoDto> employeeEcos = new();
     private List<EmployeeEcoDto> filteredEmployeeEcos = new();
@@ -136,10 +137,10 @@
     {
         if (i == 1)
         {
-            if (!string.IsNullOrEmpty(Input.searchTerm))
+            if (!string.IsNullOrEmpty(InputProjectEco.searchTerm))
             {
                 filteredProjectEcos = projectEcos.Where(e =>
-                     e.ProjectName.ToLower().Contains(Input.searchTerm.ToLower())  
+                     e.ProjectName.ToLower().Contains(InputProjectEco.searchTerm.ToLower())
                  ).ToList();
             }
             else
@@ -151,10 +152,10 @@
         }
         else if (i == 2)
         {
-            if (!string.IsNullOrEmpty(Input.searchTerm))
+            if (!string.IsNullOrEmpty(InputEmployeeEco.searchTerm))
             {
                 filteredEmployeeEcos = employeeEcos.Where(e =>
-                     e.FullName.ToLower().Contains(Input.searchTerm.ToLower()) 
+                     e.FullName.ToLower().Contains(InputEmployeeEco.searchTerm.ToLower())
                  ).ToList();
             }
             else

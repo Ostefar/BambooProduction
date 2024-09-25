@@ -175,7 +175,6 @@ else
         await LoadProjectEcoDetails();
         await LoadProjects();
         await GetUserEmail();
-        //await CheckTotalCost();
     }
 
     private void ToggleHoursForm()
@@ -208,6 +207,7 @@ else
         if (response.IsSuccessStatusCode)
         {
             showHoursForm = false;
+            await CheckTotalCost();
             await LoadProjectEcoDetails(); // Reload updated employee economy data
             Console.WriteLine("Hours registrated successfully.");
         }
@@ -235,6 +235,7 @@ else
         if (response.IsSuccessStatusCode)
         {
             showMaterialsForm = false;
+            await CheckTotalCost();
             await LoadProjectEcoDetails();
             Console.WriteLine("Materials added successfully.");
         }

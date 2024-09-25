@@ -82,6 +82,27 @@ namespace Economy.Controllers
             return Ok(employeeEco);
         }
 
+        // GET: api/EmployeeEco/{id}
+        [HttpGet("{id}/GetHourlyWageByEmployeeId")]
+        public async Task<ActionResult<EmployeeEcoDto>> GetHourlyWageByEmployeeId(Guid id)
+        {
+            var employeeEco = await _context.EmployeeEcos
+                .Where(e => e.EmployeeId == id)
+                .Select(e => new EmployeeEcoDto
+                {
+                    Id = e.Id,
+                    HourlyWage = e.HourlyWage,
+                })
+                .FirstOrDefaultAsync();
+
+            if (employeeEco == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(employeeEco);
+        }
+
         // POST: api/EmployeeEco
         [HttpPost]
         public async Task<ActionResult<EmployeeEco>> PostEmployeeEco(EmployeeEcoDto employeeEco)

@@ -15,12 +15,14 @@ namespace Economy.Controllers
     {
         private readonly EconomyDbContext _context;
         private HttpClient _projectApiClient;
+        private HttpClient _economyApiClient;
         private readonly IConverter<ProjectEco, ProjectEcoDto> taskConverter;
 
         public ProjectEcoController(EconomyDbContext context, IHttpClientFactory httpClientFactory, IConverter<ProjectEco, ProjectEcoDto> converter)
         {
             _context = context;
             _projectApiClient = httpClientFactory.CreateClient("ProjectApi");
+            _economyApiClient = httpClientFactory.CreateClient("EconomyApi");
             taskConverter = converter;
         }
 
@@ -215,14 +217,18 @@ namespace Economy.Controllers
 
             var projectId = projectEco.ProjectId;
 
-            // var projects = ; kald api med project id
+            HttpResponseMessage projectResponse = await _projectApiClient.GetAsync($"Project/{projectId}");
+            var project = await projectResponse.Content.ReadFromJsonAsync<ProjectDto>();
 
-            // var employeeId = projects.EmployeeId;
+             var employeeId = project.EmployeeId;
 
-            // var employees = ; kald api (employeeEco data vi skal have)
+            HttpResponseMessage employeeEcoResponse = await _economyApiClient.GetAsync($"EmployeeEco/{employeeId}/GetHourlyWageByEmployeeId");
+            var employeeEco = await employeeEcoResponse.Content.ReadFromJsonAsync<EmployeeEcoDto>();
 
-            //projectEco.TotalCost = (projectEco.HoursTotal * employees.HourlyWage) + projectEco.MaterialsPriceTotal;
+            int hourlyWage = int.Parse(employeeEco.HourlyWage);
 
+
+            projectEco.TotalCost = (projectEco.HoursTotal * hourlyWage) + projectEco.MaterialsPriceTotal;
 
             await _context.SaveChangesAsync();
 
