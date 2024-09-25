@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: "BambooProduction/Dockerfile"
+    ports:
+      - 9000:8080
+    environment:
+    - ASPNETCORE_ENVIRONMENT=Development
+    - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=IdentityDatabase;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
+
+  employeeapi:
+    build:
+      context: .
+      dockerfile: "Employees/Dockerfile"
+    ports:
+      - 9001:8080
+    environment:
+    - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=EmployeeDatabase;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
+
+  projectapi:
+    build:
+      context: .
+      dockerfile: "Projects/Dockerfile"
+    ports:
+      - 9002:8080
+    environment:
+    - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=ProjectDatabase;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
+
+  economyapi:
+    build:
+      context: .
+      dockerfile: "Economy/Dockerfile"
+    ports:
+      - 9003:8080
+    environment:
+    - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=EconomyDatabase;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server
+    environment:
+      - SA_PASSWORD=StrongPass123!
+      - ACCEPT_EULA=Y
+    ports:
+      - 1433:1433

@@ -21,19 +21,20 @@ builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-builder.Services.AddHttpClient("EmployeeApi", client =>
-{
-    client.BaseAddress = new Uri("https://localhost:7056/api/"); // skal ændres til docker url
-});
 
 builder.Services.AddHttpClient("ProjectApi", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7286/api/"); // skal ændres til docker url
+    client.BaseAddress = new Uri("http://projectapi:8080/api/");
+});
+
+builder.Services.AddHttpClient("EmployeeApi", client =>
+{
+    client.BaseAddress = new Uri("http://employeeapi:8080/api/");
 });
 
 builder.Services.AddHttpClient("EconomyApi", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7225/api/"); // skal ændres til docker url
+    client.BaseAddress = new Uri("http://economyapi:8080/api/");
 });
 
 builder.Services.AddMudServices();
@@ -56,11 +57,16 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
-
-
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 var app = builder.Build();
+
+// Apply migrations during startup
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -74,7 +80,7 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 //app.UseAuthentication();
 //app.UseAuthorization();
