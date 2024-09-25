@@ -8,8 +8,8 @@ services:
     ports:
       - 9000:8080
     environment:
-    - ASPNETCORE_ENVIRONMENT=Development
-    - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=IdentityDatabase;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=IdentityDatabase;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
 
   employeeapi:
     build:
@@ -18,7 +18,7 @@ services:
     ports:
       - 9001:8080
     environment:
-    - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=EmployeeDatabase;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=EmployeeDatabase;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
 
   projectapi:
     build:
@@ -27,7 +27,7 @@ services:
     ports:
       - 9002:8080
     environment:
-    - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=ProjectDatabase;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=ProjectDatabase;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
 
   economyapi:
     build:
@@ -36,7 +36,7 @@ services:
     ports:
       - 9003:8080
     environment:
-    - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=EconomyDatabase;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=EconomyDatabase;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server
@@ -45,3 +45,8 @@ services:
       - ACCEPT_EULA=Y
     ports:
       - 1433:1433
+    volumes:
+      - sql_data:/var/opt/mssql 
+
+volumes:
+  sql_data:  

@@ -41,7 +41,17 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
 var dbContext = scope.ServiceProvider.GetRequiredService<EmployeeDbContext>();
-dbContext.Database.Migrate(); 
+// Check if the database is created, and if not, migrate
+if (dbContext.Database.EnsureCreated())
+{
+// Database was created, apply migrations if any
+dbContext.Database.Migrate();
+}
+else
+{
+// Database exists, just run migrations
+dbContext.Database.Migrate();
+}
 }
 
 // Configure the HTTP request pipeline.
