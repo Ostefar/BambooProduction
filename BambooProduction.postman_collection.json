@@ -1,0 +1,196 @@
+{
+	"info": {
+		"_postman_id": "c9908edc-4c1e-45c1-a240-1b984f9ae87e",
+		"name": "BambooProduction",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12594183"
+	},
+	"item": [
+		{
+			"name": "Get Customers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {\r",
+							"    pm.expect(pm.response.code).to.be.oneOf([200]);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9002/api/Customer",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9002",
+					"path": [
+						"api",
+						"Customer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Customer by Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {\r",
+							"    pm.expect(pm.response.code).to.be.oneOf([200]);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9002/api/Customer/AF8AF6CC-4DE0-4253-9FB6-03BFCF5646AD",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9002",
+					"path": [
+						"api",
+						"Customer",
+						"AF8AF6CC-4DE0-4253-9FB6-03BFCF5646AD"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Customer",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {\r",
+							"    pm.expect(pm.response.code).to.be.oneOf([200]);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa8\",\r\n  \"companyName\": \"Testfirma\",\r\n  \"cvr\": \"45454545\",\r\n  \"contactPersonFirstName\": \"Emil\",\r\n  \"contactPersonLastName\": \"Hansen\",\r\n  \"contactPersonPhone\": \"45454545\",\r\n  \"contactPersonEmail\": \"emil@test.dk\",\r\n  \"createdDate\": \"2024-10-16T10:51:14.153Z\",\r\n  \"lastUpdated\": \"2024-10-16T10:51:14.153Z\",\r\n  \"lastUpdatedBy\": \"Emil Hansen\",\r\n  \"addressId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa2\",\r\n  \"address\": {\r\n    \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa2\",\r\n    \"addressLine\": \"Testvej 1\",\r\n    \"city\": \"Esbjerg\",\r\n    \"zipCode\": \"6700\",\r\n    \"country\": \"Danmark\",\r\n    \"createdDate\": \"2024-10-16T10:51:14.153Z\",\r\n    \"lastUpdated\": \"2024-10-16T10:51:14.153Z\",\r\n    \"lastUpdatedBy\": \"Emil Hansen\"\r\n  }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:9002/api/Customer",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9002",
+					"path": [
+						"api",
+						"Customer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Customer",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {\r",
+							"    pm.expect(pm.response.code).to.be.oneOf([200]);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa8\",\r\n  \"companyName\": \"Testfirmaet\",\r\n  \"cvr\": \"45454545\",\r\n  \"contactPersonFirstName\": \"Emil\",\r\n  \"contactPersonLastName\": \"Hansen\",\r\n  \"contactPersonPhone\": \"45454545\",\r\n  \"contactPersonEmail\": \"emil@test.dk\",\r\n  \"createdDate\": \"2024-10-16T10:51:14.153Z\",\r\n  \"lastUpdated\": \"2024-10-16T10:51:14.153Z\",\r\n  \"lastUpdatedBy\": \"Emil Hansen\",\r\n  \"addressId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa2\",\r\n  \"address\": {\r\n    \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa2\",\r\n    \"addressLine\": \"Testvej 12\",\r\n    \"city\": \"København\",\r\n    \"zipCode\": \"6700\",\r\n    \"country\": \"Danmark\",\r\n    \"createdDate\": \"2024-10-16T10:51:14.153Z\",\r\n    \"lastUpdated\": \"2024-10-16T10:51:14.153Z\",\r\n    \"lastUpdatedBy\": \"Emil Hansen\"\r\n  }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:9002/api/Customer/b22ba2a2-1063-40f2-849c-5c7fc009a1b6",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9002",
+					"path": [
+						"api",
+						"Customer",
+						"b22ba2a2-1063-40f2-849c-5c7fc009a1b6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Customer",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {\r",
+							"    pm.expect(pm.response.code).to.be.oneOf([204]);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9002/api/Customer/b22ba2a2-1063-40f2-849c-5c7fc009a1b6",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9002",
+					"path": [
+						"api",
+						"Customer",
+						"b22ba2a2-1063-40f2-849c-5c7fc009a1b6"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
