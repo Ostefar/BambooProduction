@@ -29,7 +29,7 @@ namespace Projects.Models
         public string ContactPersonPhone { get; set; }
 
         [Required(ErrorMessage = "Contact person email field is required.")]
-        [StringLength(maximumLength: 65, MinimumLength = 2)]
+        [StringLength(maximumLength: 65, MinimumLength = 10)]
         [EmailAddress(ErrorMessage = "Invalid Email Address")]
         public string ContactPersonEmail { get; set; }
 

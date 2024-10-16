@@ -1,4 +1,5 @@
 ﻿@page "/Employees"
+@attribute [Authorize(Roles = "Admin, Employee")]
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
 @inject AuthService AuthService
@@ -8,7 +9,6 @@
 @using Microsoft.AspNetCore.Authorization
 @using Shared.Dto;
 
-@attribute [Authorize(Roles = "Admin, Employee")]
 
 <PageTitle>Employees</PageTitle>
 

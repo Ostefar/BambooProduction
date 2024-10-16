@@ -61,22 +61,14 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 
 var app = builder.Build();
 
-// Apply migrations during startup
+/*
+// udkommentering skal fjernes for at anvend migreringer under opstart - dette er kun midlertigt til sqlserveren ligger i cloud istedet for lokalt.
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    // Check if the database is created, and if not, migrate
-    if (dbContext.Database.EnsureCreated())
-    {
-        // Database was created, apply migrations if any
-        dbContext.Database.Migrate();
-    }
-    else
-    {
-        // Database exists, just run migrations
-        dbContext.Database.Migrate();
-    }
+    dbContext.Database.Migrate();
 }
+*/
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

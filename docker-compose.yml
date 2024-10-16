@@ -1,6 +1,16 @@
 version: "3.9"
 
 services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server
+    environment:
+      - SA_PASSWORD=StrongPass123!
+      - ACCEPT_EULA=Y
+    ports:
+      - 1433:1433
+    volumes:
+      - sql_data:/var/opt/mssql 
+
   web:
     build:
       context: .
@@ -38,15 +48,5 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=EconomyDatabase;User Id=sa;Password=StrongPass123!;TrustServerCertificate=True;
 
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server
-    environment:
-      - SA_PASSWORD=StrongPass123!
-      - ACCEPT_EULA=Y
-    ports:
-      - 1433:1433
-    volumes:
-      - sql_data:/var/opt/mssql 
-
 volumes:
-  sql_data:  
+  sql_data:
